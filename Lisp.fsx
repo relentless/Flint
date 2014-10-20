@@ -1,26 +1,54 @@
-﻿type Value = int
+﻿#r "lib/fparseccs.dll"
+#r "lib/fparsec.dll"
+
+open FParsec
+
+
+// AST
+type Value =
+| Number of float
+| Text of string
+| List of Value * Value
+| Bool of bool
+
+let rec print = function
+| Number(i) -> i.ToString()
+| Text(t) -> t
+| List(val1,val2) -> "(" + print val1 + " " + print val2 + ")"
+| Bool(b) -> if b then "T" else "NIL"
 
 type Exp =
 | Atom of Value
 | Sexp of Exp * Exp
-| Car of Exp * Exp
-| Cdr of Exp * Exp
-| Cons of Exp * Exp
-| Eq of Exp * Exp
-| IsAtom of Exp
+| Func of string * Exp
 
-let rec execute = function
-| Atom x -> x.ToString()
-| Sexp(exp1,exp2) -> "(" + execute exp1 + " " + execute exp2 + ")"
-| Car(exp1,exp2) -> execute exp1
-| Cdr(exp1,exp2) -> execute exp2
-| Cons(exp1,exp2) -> execute <| Sexp(exp1,exp2)
-| Eq(exp1,exp2) -> if exp1 = exp2 then "T" else "NIL"
-| IsAtom(Atom(_)) -> "T"
-| IsAtom(_) -> "NIL"
+// Interpreter
+let rec exec = function
+| Atom x -> x
+| Sexp(exp1,exp2) -> List(exec exp1, exec exp2)
+| Func(name, exp) -> 
+    match name, exp with
+    | "car", Sexp(exp1,exp2) -> exec exp1
+    | "cdr", Sexp(exp1,exp2) -> exec exp2
+    | "cons", Sexp(exp1,exp2) -> exec <| Sexp(exp1,exp2)
+    | "eq", Sexp(exp1,exp2) -> if exp1 = exp2 then Bool(true) else Bool(false)
+    | "atom", Atom(_) -> Bool(true)
+    | "atom", _ -> Bool(false)
+    | x, exp -> failwith ("Function '" + x + "' not recognised, or incorrect parameters used")
 
-execute <| Sexp( Atom(5), Car( Cons( Atom(6), Atom(50) ), Atom(3)) )
+let execute expression = 
+    printfn "%s" <| print(exec expression)
 
-execute <| Sexp( Eq( Atom(6), Atom(6)), Eq( Atom(6), Atom(7)))
+execute <| Func("eq", Sexp(Atom(Number(3.0)), Atom(Number(3.0))))
 
-execute <| Sexp( IsAtom(Atom(5)), IsAtom(Sexp(Atom(8), Atom(7))))
+// Parser
+let eq = pstring "(eq" >>. spaces1 >>. pfloat
+//>>. spaces1 >>. pfloat >>. pstring ")"
+let peq = eq |>> fun x -> Func("eq", Sexp(Atom(Number(x)), Atom(Number(x))))
+
+let parse code =
+    match run peq code with
+    | Success(result,_,_) -> result
+    | Failure(msg,_,_) -> failwith msg
+
+execute (parse "(eq 3")
