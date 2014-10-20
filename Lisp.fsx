@@ -1,4 +1,5 @@
-﻿type Value = int
+// My initial try - probably not the right approach.  See Lisp2.fsx for a better way.
+type Value = int
 
 type Exp =
 | Atom of Value
