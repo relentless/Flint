@@ -3,7 +3,6 @@
 
 open FParsec
 
-
 // AST
 type Value =
 | Number of float
