@@ -4,41 +4,41 @@
 open FParsec
 
 // AST
-type Value =
-| Number of float
-| Text of string
-| List of Value * Value
-| Bool of bool
+type AtomType =
+    | Number of float
+    | String of string
+    // Symbol
+    // Boolean
 
-let rec print = function
-| Number(i) -> i.ToString()
-| Text(t) -> t
-| List(val1,val2) -> "(" + print val1 + " " + print val2 + ")"
-| Bool(b) -> if b then "T" else "NIL"
-
-type Exp =
-| Atom of Value
-| Sexp of Exp * Exp
-| Func of string * Exp
+type Expression =
+    | Atom of AtomType
+    | Pair of Expression * Expression
+    | Exp of Expression list
 
 // Interpreter
-let rec exec = function
-| Atom x -> x
-| Sexp(exp1,exp2) -> List(exec exp1, exec exp2)
-| Func(name, exp) -> 
-    match name, exp with
-    | "car", Sexp(exp1,exp2) -> exec exp1
-    | "cdr", Sexp(exp1,exp2) -> exec exp2
-    | "cons", Sexp(exp1,exp2) -> exec <| Sexp(exp1,exp2)
-    | "eq", Sexp(exp1,exp2) -> if exp1 = exp2 then Bool(true) else Bool(false)
-    | "atom", Atom(_) -> Bool(true)
-    | "atom", _ -> Bool(false)
-    | x, exp -> failwith ("Function '" + x + "' not recognised, or incorrect parameters used")
+let rec evaluate = function
+    | Atom(value) -> Atom(value)
+    | Pair(exp1, exp2) -> Pair(evaluate exp1, evaluate exp2)
+    | Exp([]) -> Exp([])
+    | Exp(first::rest) -> Exp(evaluate first::[evaluate <| Exp(rest)])
 
-let execute expression = 
-    printfn "%s" <| print(exec expression)
+let print expression =
+    let rec toString = function
+        | Atom(value) -> 
+            match value with
+            | Number(n) -> sprintf "%f" n
+            | String(s) -> sprintf "%A" s
+        | Pair(exp1, exp2) -> sprintf "(%s . %s)" (exp1 |> toString) (exp2 |> toString)
+        | Exp([]) -> sprintf "()"
+        | Exp(first::rest) -> sprintf "(%s %s)" (first |> toString) (Exp(rest) |> toString)
+        // don't print all brackets for expression lists
 
-execute <| Func("eq", Sexp(Atom(Number(3.0)), Atom(Number(3.0))))
+    printfn "%s" (expression |> toString)
+
+Exp([Atom(String("hi")); Atom(Number(3.0))])
+//Pair(Atom(Number(3.0)), Atom(String("Hi")))
+|> evaluate
+|> print
 
 // Parser
 let eq = pstring "(eq" >>. spaces1 >>. pfloat
