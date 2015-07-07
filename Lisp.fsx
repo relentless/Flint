@@ -4,50 +4,103 @@
 open FParsec
 
 // AST
-type AtomType =
-    | Number of float
-    | String of string
-    // Symbol
-    // Boolean
-
 type Expression =
-    | Atom of AtomType
-    | Pair of Expression * Expression
-    | Exp of Expression list
+    | Number of int
+    | String of string
+    | Symbol of string
+    | Boolean of bool
+    | ExpList of Expression list
 
 // Interpreter
+let rec toString = function
+    | Number(n) -> sprintf "%i" n
+    | String(s) -> sprintf "%A" s
+    | Symbol(s) -> sprintf "%s" s
+    | Boolean(b) -> sprintf "%s" (if b then "#t" else "#f")
+    | ExpList(expressions) -> sprintf "(%s)" (expressions |> expressionsToString)
+and expressionsToString expressions =
+    expressions |> List.map toString |> String.concat " "
+
+let getNumber (Number(n)) = n
+
+let numberReduction func args =
+    args |> List.map getNumber |> (List.reduce func) |> Number
+
+let functions =
+    Map.empty
+        .Add("+", (numberReduction (+)))
+        .Add("-", (numberReduction (-)))
+        .Add("/", (numberReduction (/)))
+        .Add("*", (numberReduction (*)))
+        .Add("cons", function head::ExpList(tail)::[] -> ExpList(head::tail))
+        .Add("car", function head::_ -> head)
+        .Add("cdr", function head::tail -> ExpList(tail))
+        .Add(">", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 > arg2))
+        .Add("<", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 < arg2))
+        .Add("=", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 = arg2))
+
 let rec evaluate = function
-    | Atom(value) -> Atom(value)
-    | Pair(exp1, exp2) -> Pair(evaluate exp1, evaluate exp2)
-    | Exp([]) -> Exp([])
-    | Exp(first::rest) -> Exp(evaluate first::[evaluate <| Exp(rest)])
+    | ExpList(Symbol("quote")::ExpList(rest)::[]) -> ExpList(rest)
+    | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> if (evaluate condition) = Boolean(true) then evaluate trueCase else evaluate falseCase
+    | ExpList(Symbol(func)::arguments) -> functions.[func] (List.map evaluate arguments)
+    | ExpList(expressions) -> failwith "list without application: %s" (expressions |> expressionsToString)
+    | value -> value
 
-let print expression =
-    let rec toString = function
-        | Atom(value) -> 
-            match value with
-            | Number(n) -> sprintf "%f" n
-            | String(s) -> sprintf "%A" s
-        | Pair(exp1, exp2) -> sprintf "(%s . %s)" (exp1 |> toString) (exp2 |> toString)
-        | Exp([]) -> sprintf "()"
-        | Exp(first::rest) -> sprintf "(%s %s)" (first |> toString) (Exp(rest) |> toString)
-        // don't print all brackets for expression lists
-
-    printfn "%s" (expression |> toString)
-
-Exp([Atom(String("hi")); Atom(Number(3.0))])
-//Pair(Atom(Number(3.0)), Atom(String("Hi")))
-|> evaluate
-|> print
+let print expression = printfn "%s" (expression |> toString)
 
 // Parser
-let eq = pstring "(eq" >>. spaces1 >>. pfloat
-//>>. spaces1 >>. pfloat >>. pstring ")"
-let peq = eq |>> fun x -> Func("eq", Sexp(Atom(Number(x)), Atom(Number(x))))
+let parseExpression, parseExpressionRef = createParserForwardedToRef()
 
-let parse code =
-    match run peq code with
+let chr c = skipChar c
+let symbol = anyOf "!$%&|*+-/:<=>?@^_~#"
+
+let parseTrue = pstring "#t" |>> (fun _ -> Boolean(true))
+let parseFalse = pstring "#f" |>> (fun _ -> Boolean(false))
+
+let parseSymbol = parse {
+        let! first = letter <|> symbol
+        let! rest = manyChars (letter <|> symbol <|> digit)
+        return Symbol(first.ToString() + rest)
+}
+
+let parseString = parse {
+    do! chr '"'
+    let! xs = manyChars (noneOf "\"")
+    do! chr '"'
+    return String(xs)
+}
+
+let parseNumber = many1Chars digit |>> (fun num -> Number(System.Int32.Parse num))
+let parseQuoted = chr '\'' >>. parseExpression |>> fun expr -> ExpList([Symbol("quote"); expr])
+let parseList = chr '(' >>. sepBy parseExpression spaces1 .>> chr ')' |>> ExpList
+
+do parseExpressionRef := 
+    parseTrue <|> 
+    parseFalse <|> 
+    parseSymbol <|> 
+    parseString <|> 
+    parseNumber <|> 
+    parseQuoted <|> 
+    parseList
+
+let parse text =
+    match run parseExpression text with
     | Success(result,_,_) -> result
     | Failure(msg,_,_) -> failwith msg
 
-execute (parse "(eq 3")
+// tests
+
+//ExpList([String("hi"); Number(3)])
+//Pair(Atom(Number(3.0)), Atom(String("Hi")))
+//ExpList([Symbol("+"); Number(3); Number(5)])
+//|> evaluate
+//|> print
+
+"(/ 100 2 5)"
+"(quote #t #f 99 \"Hi Mum\")"
+"""(cons "Hi Mum" '(1 2 3))"""
+"(cdr 1 2 3)"
+"""(if (> 3 4) "Hi Mum" "Hi Dad")"""
+|> parse
+|> evaluate
+|> print
