@@ -26,7 +26,7 @@ let getNumber (Number(n)) = n
 let numberReduction func args =
     args |> List.map getNumber |> (List.reduce func) |> Number
 
-let functions =
+let environment =
     Map.empty
         .Add("+", (numberReduction (+)))
         .Add("-", (numberReduction (-)))
@@ -38,12 +38,14 @@ let functions =
         .Add(">", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 > arg2))
         .Add("<", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 < arg2))
         .Add("=", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 = arg2))
+        .Add("r", function [] -> Number(10))
 
 let rec evaluate = function
     | ExpList(Symbol("quote")::ExpList(rest)::[]) -> ExpList(rest)
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> if (evaluate condition) = Boolean(true) then evaluate trueCase else evaluate falseCase
-    | ExpList(Symbol(func)::arguments) -> functions.[func] (List.map evaluate arguments)
+    | ExpList(Symbol(func)::arguments) -> environment.[func] (List.map evaluate arguments)
     | ExpList(expressions) -> failwith "list without application: %s" (expressions |> expressionsToString)
+    | Symbol(s) -> if environment.ContainsKey(s) then environment.[s] [] else Symbol(s)
     | value -> value
 
 let print expression = printfn "%s" (expression |> toString)
@@ -101,6 +103,7 @@ let parse text =
 """(cons "Hi Mum" '(1 2 3))"""
 "(cdr 1 2 3)"
 """(if (> 3 4) "Hi Mum" "Hi Dad")"""
+"r"
 |> parse
 |> evaluate
 |> print
