@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Flint", "Flint.fsproj", "{4C085379-C5D4-438C-8701-808FAC2C0A90}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "REPL", "..\REPL\REPL.fsproj", "{C657FC11-E855-4C55-B74F-692786808BB1}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Flint.Tests", "..\Flint.Tests\Flint.Tests.fsproj", "{E726E2BD-1512-41AC-82AA-D6E709013A0F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4C085379-C5D4-438C-8701-808FAC2C0A90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C085379-C5D4-438C-8701-808FAC2C0A90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C085379-C5D4-438C-8701-808FAC2C0A90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C085379-C5D4-438C-8701-808FAC2C0A90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C657FC11-E855-4C55-B74F-692786808BB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C657FC11-E855-4C55-B74F-692786808BB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C657FC11-E855-4C55-B74F-692786808BB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C657FC11-E855-4C55-B74F-692786808BB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E726E2BD-1512-41AC-82AA-D6E709013A0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E726E2BD-1512-41AC-82AA-D6E709013A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E726E2BD-1512-41AC-82AA-D6E709013A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E726E2BD-1512-41AC-82AA-D6E709013A0F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

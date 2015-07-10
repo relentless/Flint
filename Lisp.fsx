@@ -107,3 +107,7 @@ let parse text =
 |> parse
 |> evaluate
 |> print
+
+
+"(quote #t #f 99 \"Hi Mum\")"
+|> parse
