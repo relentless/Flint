@@ -25,7 +25,7 @@ let parseString = parse {
 }
 
 let parseNumber = many1Chars digit |>> (fun num -> Number(System.Int32.Parse num))
-let parseQuoted = chr '\'' >>. parseExpression |>> fun expr -> ExpList([Symbol("quote"); expr])
+let parseQuoted = chr '\'' >>. parseExpression |>> fun (ExpList(items)) -> ExpList(Symbol("quote")::items)
 let parseList = chr '(' >>. sepBy parseExpression spaces1 .>> chr ')' |>> ExpList
 
 do parseExpressionRef := 

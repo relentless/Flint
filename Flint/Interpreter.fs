@@ -23,17 +23,21 @@ let environment =
         .Add("/", (numberReduction (/)))
         .Add("*", (numberReduction (*)))
         .Add("cons", function head::ExpList(tail)::[] -> ExpList(head::tail))
-        .Add("car", function head::_ -> head)
-        .Add("cdr", function head::tail -> ExpList(tail))
+        .Add("car", function ExpList(head::_)::[] -> head)
+        .Add("cdr", function ExpList(_::tail)::[]  -> ExpList(tail))
         .Add(">", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 > arg2))
         .Add("<", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 < arg2))
         .Add("=", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 = arg2))
         .Add("r", function [] -> Number(10))
 
 let rec evaluate = function
-    | ExpList(Symbol("quote")::ExpList(rest)::[]) -> ExpList(rest)
+    | ExpList(Symbol("quote")::rest) -> ExpList(rest)
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> if (evaluate condition) = Boolean(true) then evaluate trueCase else evaluate falseCase
-    | ExpList(Symbol(func)::arguments) -> environment.[func] (List.map evaluate arguments)
+    | ExpList(Symbol(func)::arguments) -> 
+        if environment.ContainsKey(func) then
+            environment.[func] (List.map evaluate arguments)
+        else
+            failwith (sprintf "Function '%s' not found." func)
     | ExpList(expressions) -> failwith "list without application: %s" (expressions |> expressionsToString)
     | Symbol(s) -> if environment.ContainsKey(s) then environment.[s] [] else Symbol(s)
     | value -> value
