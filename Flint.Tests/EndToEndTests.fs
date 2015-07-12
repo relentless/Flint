@@ -4,11 +4,13 @@ open NUnit.Framework
 open Swensen.Unquote
 open Parser
 open Interpreter
+open SyntaxTree
 
 let execute text =
     text
     |> parse
-    |> evaluate
+    |> evaluate initialEnvironment
+    |> result
     |> toString 
 
 [<Test>]
@@ -77,3 +79,8 @@ let ``Invalid function gives reasonable message`` () =
         failwith "exception not thrown as expected"
     with
     | ex -> test <@ ex.Message = "Function 'whatever' not found."  @>
+
+[<Test>]
+let ``Define adds value to environment`` () =
+    let environment, result = "(define x 10)" |> parse |> evaluate initialEnvironment
+    test <@ environment.["x"] [] = Number(10) @>

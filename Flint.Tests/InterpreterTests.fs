@@ -5,14 +5,18 @@ open Swensen.Unquote
 open SyntaxTree
 open Interpreter
 
+let evalInitial expression = 
+    evaluate initialEnvironment expression
+    |> result
+
 [<Test>]
 let ``Numeric atom evaluates to itself`` () =
-    test <@ evaluate <| Number(99) = Number(99) @>
+    test <@ evalInitial <| Number(99) = Number(99) @>
 
 [<Test>]
 let ``Symbolic atom evaluates to itself`` () =
-    test <@ evaluate <| Symbol("Hi Mum") = Symbol("Hi Mum") @>
+    test <@ evalInitial <| Symbol("Hi Mum") = Symbol("Hi Mum") @>
 
 [<Test>]
 let ``Quoted list evaluates to list`` () =
-    test <@ evaluate <| ExpList( [Symbol("quote"); Number(1); Number(2)]) = ExpList( [Number(1); Number(2)]) @>
+    test <@ evalInitial <| ExpList( [Symbol("quote"); Number(1); Number(2)]) = ExpList( [Number(1); Number(2)]) @>

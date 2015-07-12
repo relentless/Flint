@@ -1,28 +1,28 @@
 ﻿open Parser
 open Interpreter
 
-let execute text =
+let execute environment text =
     text
     |> parse
-    |> evaluate
-    |> print 
+    |> evaluate environment
 
 [<EntryPoint>]
 let main _ = 
 
-    printfn "Welcome to Flint v0.1"
+    printfn "Welcome to Flint, the F# Lisp Interpreter, v0.1.1"
 
-    printfn "\nEnter X to exit\n"
+    printfn "Type exit to quit\n"
 
-    let rec inputLoop() =
+    let rec inputLoop environment =
         printf "\n> "
         match System.Console.ReadLine() with
-        | "X" | "x" -> ()
+        | "exit" | "Exit" -> ()
         | input -> 
-            execute input
-            inputLoop()
+            let environment, result = input |> parse |> evaluate environment
+            print result
+            inputLoop environment
 
-    inputLoop()
+    inputLoop initialEnvironment
 
     printfn "Goodbye"
 

@@ -20,3 +20,7 @@ let ``Quoted list parses successfully`` () =
 [<Test>]
 let ``Quote operator list parses successfully`` () =
     test <@ parse "'(1 2)" = ExpList( [Symbol("quote"); Number(1); Number(2)]) @>
+
+[<Test>]
+let ``Defining a value parses successfully`` () =
+    test <@ parse "(define myVal 99)" = ExpList( [Symbol("define"); Symbol("myVal"); Number(99)]) @>

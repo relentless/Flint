@@ -16,7 +16,7 @@ let getNumber (Number(n)) = n
 let numberReduction func args =
     args |> List.map getNumber |> (List.reduce func) |> Number
 
-let environment =
+let initialEnvironment =
     Map.empty
         .Add("+", (numberReduction (+)))
         .Add("-", (numberReduction (-)))
@@ -30,16 +30,27 @@ let environment =
         .Add("=", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 = arg2))
         .Add("r", function [] -> Number(10))
 
-let rec evaluate = function
-    | ExpList(Symbol("quote")::rest) -> ExpList(rest)
-    | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> if (evaluate condition) = Boolean(true) then evaluate trueCase else evaluate falseCase
+let result (envirnment, expression) = expression
+
+let rec evaluate (environment:Map<string, Expression List -> Expression>) = function
+    | ExpList(Symbol("quote")::rest) -> environment, ExpList(rest)
+    | ExpList(Symbol("define")::Symbol(name)::expression::_) -> environment.Add(name, (fun _ -> expression)), String(name + " defined")
+    | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
+        if (evaluate environment condition) |> result = Boolean(true) then 
+            environment, (evaluate environment trueCase |> result) 
+        else 
+            environment, (evaluate environment falseCase |> result)
     | ExpList(Symbol(func)::arguments) -> 
         if environment.ContainsKey(func) then
-            environment.[func] (List.map evaluate arguments)
+            environment, environment.[func] (List.map (fun exp -> evaluate environment exp |> result) arguments)
         else
             failwith (sprintf "Function '%s' not found." func)
     | ExpList(expressions) -> failwith "list without application: %s" (expressions |> expressionsToString)
-    | Symbol(s) -> if environment.ContainsKey(s) then environment.[s] [] else Symbol(s)
-    | value -> value
+    | Symbol(s) -> 
+        if environment.ContainsKey(s) then 
+            environment, environment.[s] [] 
+        else 
+            environment, Symbol(s)
+    | value -> environment, value
 
 let print expression = printfn "%s" (expression |> toString)
