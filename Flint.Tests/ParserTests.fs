@@ -5,22 +5,28 @@ open Swensen.Unquote
 open SyntaxTree
 open Parser
 
-[<Test>]
-let ``Single number parses successfully`` () =
-    test <@ parse "3" = Number(3) @>
+let parseFirst text = parse text |> (fun (SeparateExpressions(first::rest)) -> first)
 
 [<Test>]
-let ``Quote symbol parses successfully`` () =
-    test <@ parse "quote" = Symbol("quote") @>
+let ``Parsing single number`` () =
+    test <@ parseFirst "3" = Number(3) @>
 
 [<Test>]
-let ``Quoted list parses successfully`` () =
-    test <@ parse "(quote 1 2)" = ExpList( [Symbol("quote"); Number(1); Number(2)]) @>
+let ``Parsing quote symbol`` () =
+    test <@ parseFirst "quote" = Symbol("quote") @>
 
 [<Test>]
-let ``Quote operator list parses successfully`` () =
-    test <@ parse "'(1 2)" = ExpList( [Symbol("quote"); Number(1); Number(2)]) @>
+let ``Parsing quoted list`` () =
+    test <@ parseFirst "(quote 1 2)" = ExpList( [Symbol("quote"); Number(1); Number(2)]) @>
 
 [<Test>]
-let ``Defining a value parses successfully`` () =
-    test <@ parse "(define myVal 99)" = ExpList( [Symbol("define"); Symbol("myVal"); Number(99)]) @>
+let ``Parsing quote operator list`` () =
+    test <@ parseFirst "'(1 2)" = ExpList( [Symbol("quote"); Number(1); Number(2)]) @>
+
+[<Test>]
+let ``Parsing define`` () =
+    test <@ parseFirst "(define myVal 99)" = ExpList( [Symbol("define"); Symbol("myVal"); Number(99)]) @>
+
+[<Test>]
+let ``Parsing separate expressions`` () =
+    test <@ parse "1 2 3" = SeparateExpressions( [Number(1); Number(2); Number(3)]) @>

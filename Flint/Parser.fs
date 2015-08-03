@@ -4,6 +4,7 @@ open FParsec
 open SyntaxTree
 
 let parseExpression, parseExpressionRef = createParserForwardedToRef()
+let parseSingleExpression, parseSingleExpressionRef = createParserForwardedToRef()
 
 let chr c = skipChar c
 let symbol = anyOf "!$%&|*+-/:<=>?@^_~#"
@@ -25,17 +26,19 @@ let parseString = parse {
 }
 
 let parseNumber = many1Chars digit |>> (fun num -> Number(System.Int32.Parse num))
-let parseQuoted = chr '\'' >>. parseExpression |>> fun (ExpList(items)) -> ExpList(Symbol("quote")::items)
-let parseList = chr '(' >>. sepBy parseExpression spaces1 .>> chr ')' |>> ExpList
+let parseQuoted = chr '\'' >>. parseSingleExpression |>> fun (ExpList(items)) -> ExpList(Symbol("quote")::items)
+let parseList = chr '(' >>. sepBy parseSingleExpression spaces1 .>> chr ')' |>> ExpList
 
-do parseExpressionRef := 
+do parseSingleExpressionRef :=
+    parseQuoted <|>
+    parseList <|>
     parseTrue <|> 
     parseFalse <|> 
     parseSymbol <|> 
     parseString <|> 
-    parseNumber <|> 
-    parseQuoted <|> 
-    parseList
+    parseNumber
+    
+do parseExpressionRef := sepBy parseSingleExpression spaces1 |>> SeparateExpressions
 
 let parse text =
     match run parseExpression text with

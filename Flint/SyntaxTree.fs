@@ -6,3 +6,5 @@ type Expression =
     | Symbol of string
     | Boolean of bool
     | ExpList of Expression list
+    | SeparateExpressions of Expression list
+    | Nil

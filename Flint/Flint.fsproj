@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="SyntaxTree.fs" />
     <Compile Include="Parser.fs" />
+    <Compile Include="Printer.fs" />
     <Compile Include="Interpreter.fs" />
     <Content Include="packages.config" />
     <Content Include="app.config" />

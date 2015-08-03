@@ -4,6 +4,7 @@ open NUnit.Framework
 open Swensen.Unquote
 open Parser
 open Interpreter
+open Printer
 open SyntaxTree
 
 let execute text =

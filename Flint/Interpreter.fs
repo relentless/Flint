@@ -1,15 +1,7 @@
 ﻿module Interpreter
 
 open SyntaxTree
-
-let rec toString = function
-    | Number(n) -> sprintf "%i" n
-    | String(s) -> sprintf "%A" s
-    | Symbol(s) -> sprintf "%s" s
-    | Boolean(b) -> sprintf "%s" (if b then "#t" else "#f")
-    | ExpList(expressions) -> sprintf "(%s)" (expressions |> expressionsToString)
-and expressionsToString expressions =
-    expressions |> List.map toString |> String.concat " "
+open Printer
 
 let getNumber (Number(n)) = n
 
@@ -34,7 +26,7 @@ let result (envirnment, expression) = expression
 
 let rec evaluate (environment:Map<string, Expression List -> Expression>) = function
     | ExpList(Symbol("quote")::rest) -> environment, ExpList(rest)
-    | ExpList(Symbol("define")::Symbol(name)::expression::_) -> environment.Add(name, (fun _ -> expression)), String(name + " defined")
+    | ExpList(Symbol("define")::Symbol(name)::expression::_) -> environment.Add(name, (fun _ -> expression)), Nil
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
         if (evaluate environment condition) |> result = Boolean(true) then 
             environment, (evaluate environment trueCase |> result) 
@@ -45,12 +37,19 @@ let rec evaluate (environment:Map<string, Expression List -> Expression>) = func
             environment, environment.[func] (List.map (fun exp -> evaluate environment exp |> result) arguments)
         else
             failwith (sprintf "Function '%s' not found." func)
-    | ExpList(expressions) -> failwith "list without application: %s" (expressions |> expressionsToString)
+    | ExpList(expressions) -> failwith "list without application: %s" (expressions |> expressionsToString " ")
     | Symbol(s) -> 
         if environment.ContainsKey(s) then 
             environment, environment.[s] [] 
         else 
-            environment, Symbol(s)
+            failwith (sprintf "Symbol '%s' not found." s)
+    | SeparateExpressions( expressions ) -> 
+        expressions 
+        |> List.fold (fun (environment,expressions) expression -> 
+            let newEnv, result = evaluate environment expression
+            newEnv,expressions@[result])
+            (environment,[])
+        |> (fun (env, expressions) -> env, SeparateExpressions(expressions))
     | value -> environment, value
 
 let print expression = printfn "%s" (expression |> toString)

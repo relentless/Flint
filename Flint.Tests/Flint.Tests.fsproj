@@ -54,6 +54,7 @@
     <Content Include="app.config" />
     <Compile Include="InterpreterTests.fs" />
     <Compile Include="EndToEndTests.fs" />
+    <Compile Include="PrinterTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
