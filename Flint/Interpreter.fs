@@ -27,6 +27,11 @@ let initialEnvironment =
 let result (envirnment, expression) = expression
 
 let rec evaluate (environment:EnvironmentDictionary) = function
+    | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
+        if (evaluate environment condition) |> result = Boolean(true) then 
+            environment, (evaluate environment trueCase |> result) 
+        else 
+            environment, (evaluate environment falseCase |> result)
     | ExpList(Symbol("quote")::rest) -> environment, ExpList(rest)
     | ExpList(Symbol("define")::Symbol(name)::expression::_) -> environment.Add(name, (fun _ -> expression)), Nil
     | ExpList(Symbol("lambda")::ExpList(formals)::ExpList(body)::_) -> environment, Procedure(formals, body)
@@ -37,24 +42,22 @@ let rec evaluate (environment:EnvironmentDictionary) = function
         // add formals to temp environment, with values as provided by arguments
         let environmentWithArguments =
             List.zip formals arguments
-            |> List.fold (fun (env:EnvironmentDictionary) (formal,argument) -> 
-                    env.Add( "hi", (fun _ -> Symbol("a"))))
+            |> List.fold (fun (env:EnvironmentDictionary) (Symbol(formal),argument) -> 
+                    env.Add( formal, (fun [] -> argument)))
                 environment
 
         // evaluate procedure with temp environment
         evaluate environmentWithArguments <| ExpList(body)
-
-    | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
-        if (evaluate environment condition) |> result = Boolean(true) then 
-            environment, (evaluate environment trueCase |> result) 
-        else 
-            environment, (evaluate environment falseCase |> result)
     | ExpList(Symbol(func)::arguments) -> 
         if environment.ContainsKey(func) then
             environment, environment.[func] (List.map (fun exp -> evaluate environment exp |> result) arguments)
         else
             failwith (sprintf "Function '%s' not found." func)
-    | ExpList(expressions) -> failwith "list without application: %s" (expressions |> expressionsToString " ")
+    | ExpList(expression::[]) -> evaluate environment expression
+    | ExpList(first::rest) -> 
+        let updatedEnvironment, result = evaluate environment first
+        evaluate updatedEnvironment <| ExpList(rest)
+    //| ExpList(expressions) -> failwith (sprintf "list without application: %s" (expressions |> expressionsToString " "))
     | Symbol(s) -> 
         if environment.ContainsKey(s) then 
             environment, environment.[s] [] 

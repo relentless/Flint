@@ -40,3 +40,8 @@ let ``Interpreting lambda evaluates to Procedure`` () =
 [<Test>]
 let ``Interpreting applied procedure evaluates procedure using supplied arguments`` () =
     test <@ evalInitial <| ExpList([Procedure(formals = [Symbol("x")], body = [Symbol("+"); Symbol("x"); Symbol("x")]); Number(3)]) = Number(6) @>
+
+    
+[<Test>]
+let ``Interpreting Complex expression that evaluates to function works as first expression in a list`` () =
+    test <@ evalInitial <| ExpList([ExpList([Symbol("if"); Boolean(true); Symbol("+"); Symbol("-")]); Number(1); Number(2)]) = Number(3) @>
