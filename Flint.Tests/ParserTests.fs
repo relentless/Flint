@@ -30,3 +30,7 @@ let ``Parsing define`` () =
 [<Test>]
 let ``Parsing separate expressions`` () =
     test <@ parse "1 2 3" = SeparateExpressions( [Number(1); Number(2); Number(3)]) @>
+
+[<Test>]
+let ``Parsing lambda`` () =
+    test <@ parseFirst "(lambda (x) (+ x x))" = ExpList([Symbol("lambda"); ExpList([Symbol("x")]); ExpList([Symbol("+"); Symbol("x"); Symbol("x")])]) @>

@@ -32,3 +32,11 @@ let ``Interpreting quoted list evaluates to list`` () =
 [<Test>]
 let ``Interpreting separate expressions evaluates to separate expressions`` () =
     test <@ evalInitial <| SeparateExpressions( [Number(3); Number(4); Number(5)]) = SeparateExpressions( [Number(3); Number(4); Number(5)]) @>
+
+[<Test>]
+let ``Interpreting lambda evaluates to Procedure`` () =
+    test <@ evalInitial <| ExpList([Symbol("lambda"); ExpList([Symbol("x")]); ExpList([Symbol("+"); Symbol("x"); Symbol("x")])]) = Procedure(formals = [Symbol("x")], body = [Symbol("+"); Symbol("x"); Symbol("x")]) @>
+
+[<Test>]
+let ``Interpreting applied procedure evaluates procedure using supplied arguments`` () =
+    test <@ evalInitial <| ExpList([Procedure(formals = [Symbol("x")], body = [Symbol("+"); Symbol("x"); Symbol("x")]); Number(3)]) = Number(6) @>

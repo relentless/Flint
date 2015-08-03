@@ -7,4 +7,5 @@ type Expression =
     | Boolean of bool
     | ExpList of Expression list
     | SeparateExpressions of Expression list
+    | Procedure of formals: Expression list * body: Expression list
     | Nil

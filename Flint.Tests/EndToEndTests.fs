@@ -85,3 +85,17 @@ let ``Invalid function gives reasonable message`` () =
 let ``Define adds value to environment`` () =
     let environment, result = "(define x 10)" |> parse |> evaluate initialEnvironment
     test <@ environment.["x"] [] = Number(10) @>
+
+[<Test>]
+let ``Lambda is evaluated using the following parameters`` () =
+    test <@ execute "((lambda (x y) (+ x y)) 1 2)"  = "3" @>
+
+//[<Test>]
+//let ``Lambda adds a function to the environment with a generated name`` () =
+//    let environment, _ = "(lambda (x y) (+ x y))" |> parse |> evaluate initialEnvironment
+//    test <@ environment.ContainsKey "#lambda1"@>
+
+//[<Test>]
+//let ``Lambda evaluates to a symbol of a generated name`` () =
+//    let environment, result = "(lambda )" |> parse |> evaluate initialEnvironment
+//    test <@ environment.["x"] [] = Number(10) @>

@@ -3,6 +3,8 @@
 open SyntaxTree
 open Printer
 
+type EnvironmentDictionary = Map<string,(Expression list -> Expression)>
+
 let getNumber (Number(n)) = n
 
 let numberReduction func args =
@@ -24,9 +26,24 @@ let initialEnvironment =
 
 let result (envirnment, expression) = expression
 
-let rec evaluate (environment:Map<string, Expression List -> Expression>) = function
+let rec evaluate (environment:EnvironmentDictionary) = function
     | ExpList(Symbol("quote")::rest) -> environment, ExpList(rest)
     | ExpList(Symbol("define")::Symbol(name)::expression::_) -> environment.Add(name, (fun _ -> expression)), Nil
+    | ExpList(Symbol("lambda")::ExpList(formals)::ExpList(body)::_) -> environment, Procedure(formals, body)
+    | ExpList(Procedure(formals, body)::arguments) ->
+
+        // todo: evaluate arguments
+
+        // add formals to temp environment, with values as provided by arguments
+        let environmentWithArguments =
+            List.zip formals arguments
+            |> List.fold (fun (env:EnvironmentDictionary) (formal,argument) -> 
+                    env.Add( "hi", (fun _ -> Symbol("a"))))
+                environment
+
+        // evaluate procedure with temp environment
+        evaluate environmentWithArguments <| ExpList(body)
+
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
         if (evaluate environment condition) |> result = Boolean(true) then 
             environment, (evaluate environment trueCase |> result) 
