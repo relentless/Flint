@@ -10,7 +10,7 @@ open SyntaxTree
 let execute text =
     text
     |> parse
-    |> evaluate initialEnvironment
+    |> evaluate initialEnvironment initialFunctions
     |> result
     |> toString 
 
@@ -74,7 +74,12 @@ let ``Multiple levels of expression get evaluated`` () =
     test <@ execute """(if (< (+ 3 4) (- 4 3)) "never happen" (cons (car '(1 2 3)) (cdr '(3 4 5))))""" = "(1 4 5)"  @>
 
 [<Test>]
-let ``Invalid function gives reasonable message`` () =
+let ``Define adds value to environment`` () =
+    let environment, functions, result = "(define x 10)" |> parse |> evaluate initialEnvironment initialFunctions
+    test <@ environment.["x"] = Number(10) @>
+
+[<Test>]
+let ``TODO: Invalid function gives reasonable message`` () =
     try
         execute "(whatever 3 4)" |> ignore
         failwith "exception not thrown as expected"
@@ -82,17 +87,12 @@ let ``Invalid function gives reasonable message`` () =
     | ex -> test <@ ex.Message = "Function 'whatever' not found."  @>
 
 [<Test>]
-let ``Define adds value to environment`` () =
-    let environment, result = "(define x 10)" |> parse |> evaluate initialEnvironment
-    test <@ environment.["x"] [] = Number(10) @>
-
-[<Test>]
 let ``TODO: Built-in procedures evaluate to a Procedure`` () =
     test <@ execute "+"  = "#<procedure:+>" @>
 
 [<Test>]
 let ``TODO: Lambdas evaluate to a Procedure`` () =
-    test <@ execute "(lambda () 0)"  = "#<procedure>" @>
+    test <@ execute "(lambda () 0)"  = "#<procedure:lambda1>" @>
 
 [<Test>]
 let ``TODO: Complex expression that evaluates to function works as first expression in a list`` () =

@@ -1,10 +1,10 @@
 ﻿open Parser
 open Interpreter
 
-let execute environment text =
+let execute environment functions text =
     text
     |> parse
-    |> evaluate environment
+    |> evaluate environment functions
 
 [<EntryPoint>]
 let main _ = 
@@ -13,16 +13,16 @@ let main _ =
 
     printfn "Type exit to quit\n"
 
-    let rec inputLoop environment =
+    let rec inputLoop environment functions =
         printf "\n> "
         match System.Console.ReadLine() with
         | "exit" | "Exit" -> ()
         | input -> 
-            let environment, result = input |> parse |> evaluate environment
+            let environment, functions, result = input |> parse |> evaluate environment functions
             print result
-            inputLoop environment
+            inputLoop environment functions
 
-    inputLoop initialEnvironment
+    inputLoop initialEnvironment initialFunctions
 
     printfn "Goodbye"
 

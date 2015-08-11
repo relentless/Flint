@@ -6,7 +6,7 @@ open SyntaxTree
 open Interpreter
 
 let evalInitial expression = 
-    evaluate initialEnvironment expression
+    evaluate initialEnvironment initialFunctions expression
     |> result
 
 [<Test>]
@@ -22,6 +22,14 @@ let ``Interpreting symbolic atom not in environment is an error`` () =
     | ex -> test <@ ex.Message = "Symbol 'Hi Mum' not found."  @>
 
 [<Test>]
+let ``Interpreting symbol evaluates to value in environment`` () =
+    test <@ evalInitial <| Symbol("+") = Lambda("+") @>
+
+[<Test>]
+let ``Interpreting built-in lambda evaluates it against the arguments`` () =
+    test <@ evalInitial <| ExpList([Symbol("+"); Number(5); Number(1)]) = Number(6) @>
+
+[<Test>]
 let ``Interpreting symbolic atom in environment evaluates to value in environment`` () =
     test <@ evalInitial <| SeparateExpressions( [ExpList([Symbol("define");Symbol("x");Number(99)]); Symbol("x") ]) = SeparateExpressions( [Nil; Number(99)]) @>
 
@@ -34,16 +42,13 @@ let ``Interpreting separate expressions evaluates to separate expressions`` () =
     test <@ evalInitial <| SeparateExpressions( [Number(3); Number(4); Number(5)]) = SeparateExpressions( [Number(3); Number(4); Number(5)]) @>
 
 [<Test>]
-let ``Interpreting lambda evaluates to Procedure`` () =
-    test <@ evalInitial <| ExpList([Symbol("lambda"); ExpList([Symbol("x")]); ExpList([Symbol("+"); Symbol("x"); Symbol("x")])]) = Procedure(formals = [Symbol("x")], body = [Symbol("+"); Symbol("x"); Symbol("x")]) @>
-
-[<Test>]
-let ``Interpreting applied procedure evaluates procedure using supplied arguments`` () =
-    test <@ evalInitial <| ExpList([Procedure(formals = [Symbol("x")], body = [Symbol("+"); Symbol("x"); Symbol("x")]); Number(3)]) = Number(6) @>
+let ``TODO: Interpreting lambda evaluates to Lambda with name lambda1`` () =
+    test <@ evalInitial <| ExpList([Symbol("lambda"); ExpList([Symbol("x")]); ExpList([Symbol("+"); Symbol("x"); Symbol("x")])]) = Lambda("lambda1") @>
     
-//[<Test>]
-//let ``TODO: Interpreting a lambda results in a Procedure`` () =
-//    test <@ evalInitial <| ExpList([Symbol("lambda"); ExpList([]); Number(0)]) = Procedure() @>
+[<Test>]
+let ``TODO: Interpreting lambda adds a function to the function list`` () =
+    let environment, functions, result = evaluate initialEnvironment initialFunctions <| ExpList([Symbol("lambda"); ExpList([]); Number(0)])
+    test <@ functions.ContainsKey("lambda1") @>
 
 [<Test>]
 let ``TODO: Interpreting an applied lambda without params works`` () =

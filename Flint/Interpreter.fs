@@ -3,73 +3,87 @@
 open SyntaxTree
 open Printer
 
-type EnvironmentDictionary = Map<string,(Expression list -> Expression)>
+type EnvironmentDictionary = Map<string,Expression>
+type FunctionDictionary = Map<string,(Expression list -> EnvironmentDictionary -> Expression)>
 
 let getNumber (Number(n)) = n
 
-let numberReduction func args =
+let numberReduction func args env =
     args |> List.map getNumber |> (List.reduce func) |> Number
 
 let initialEnvironment =
+    Map.empty
+        .Add("+", Lambda("+"))
+        .Add("-", Lambda("-"))
+        .Add("/", Lambda("/"))
+        .Add("*", Lambda("*"))
+        .Add("cons", Lambda("cons"))
+        .Add("car", Lambda("car"))
+        .Add("cdr", Lambda("cdr"))
+        .Add(">", Lambda(">"))
+        .Add("<", Lambda("<"))
+        .Add("=", Lambda("="))
+        .Add("testValue", Number(10))
+
+let (initialFunctions:FunctionDictionary) =
     Map.empty
         .Add("+", (numberReduction (+)))
         .Add("-", (numberReduction (-)))
         .Add("/", (numberReduction (/)))
         .Add("*", (numberReduction (*)))
-        .Add("cons", function head::ExpList(tail)::[] -> ExpList(head::tail))
-        .Add("car", function ExpList(head::_)::[] -> head)
-        .Add("cdr", function ExpList(_::tail)::[]  -> ExpList(tail))
-        .Add(">", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 > arg2))
-        .Add("<", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 < arg2))
-        .Add("=", function Number(arg1)::Number(arg2)::[] -> Boolean(arg1 = arg2))
-        .Add("r", function [] -> Number(10))
+        .Add("cons", fun args env -> match args with head::ExpList(tail)::[] -> ExpList(head::tail))
+        .Add("car", fun args env -> match args with  ExpList(head::_)::[] -> head)
+        .Add("cdr", fun args env -> match args with  ExpList(_::tail)::[] -> ExpList(tail))
+        .Add(">", fun args env -> match args with  Number(arg1)::Number(arg2)::[] -> Boolean(arg1 > arg2))
+        .Add("<", fun args env -> match args with  Number(arg1)::Number(arg2)::[] -> Boolean(arg1 < arg2))
+        .Add("=", fun args env -> match args with  Number(arg1)::Number(arg2)::[] -> Boolean(arg1 = arg2))
 
-let result (envirnment, expression) = expression
+let result (envirnment, functions, expression) = expression
 
-let rec evaluate (environment:EnvironmentDictionary) = function
+let rec evaluate (environment:EnvironmentDictionary) (functions:FunctionDictionary) = function
+    | Symbol(symbolName) ->
+        printfn "SYmbol: %s" symbolName
+        if environment.ContainsKey(symbolName) then 
+            environment, functions, environment.[symbolName]
+        else 
+            failwith (sprintf "Symbol '%s' not found." symbolName)
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
-        if (evaluate environment condition) |> result = Boolean(true) then 
-            environment, (evaluate environment trueCase |> result) 
+        if (evaluate environment functions condition) |> result = Boolean(true) then 
+            environment, functions, (evaluate environment functions trueCase |> result) 
         else 
-            environment, (evaluate environment falseCase |> result)
-    | ExpList(Symbol("quote")::rest) -> environment, ExpList(rest)
-    | ExpList(Symbol("define")::Symbol(name)::expression::_) -> environment.Add(name, (fun _ -> expression)), Nil
-    | ExpList(Symbol("lambda")::ExpList(formals)::ExpList(body)::_) -> environment, Procedure(formals, body)
-    | ExpList(Procedure(formals, body)::arguments) ->
-
-        // todo: evaluate arguments
-
-        // add formals to temp environment, with values as provided by arguments
-        let environmentWithArguments =
-            List.zip formals arguments
-            |> List.fold (fun (env:EnvironmentDictionary) (Symbol(formal),argument) -> 
-                    env.Add( formal, (fun [] -> argument)))
-                environment
-
-        // evaluate procedure with temp environment
-        evaluate environmentWithArguments <| ExpList(body)
-    | ExpList(Symbol(func)::arguments) -> 
-        if environment.ContainsKey(func) then
-            environment, environment.[func] (List.map (fun exp -> evaluate environment exp |> result) arguments)
+            environment, functions, (evaluate environment functions falseCase |> result)
+//    | ExpList(Symbol("quote")::rest) -> environment, functions, ExpList(rest) // TODO: work out how to stop evaluation with quoted lists.  Make quoted an AST concept?
+    | ExpList(Symbol("define")::Symbol(name)::expression::_) -> environment.Add(name, expression), functions, Nil
+    | ExpList(Symbol("lambda")::ExpList(formals)::body::[]) -> 
+        // TODO: create function properly, adding arguments into environment first
+        environment, functions.Add("lambda1", fun args env -> evaluate env functions body |> result), Lambda("lambda1")
+    | ExpList(Lambda(lambdaName)::arguments) -> 
+        if functions.ContainsKey(lambdaName) then
+            printfn "Lambda: %s %A" lambdaName arguments
+            environment, functions, functions.[lambdaName] arguments environment
         else
-            failwith (sprintf "Function '%s' not found." func)
-    | ExpList(expression::[]) -> evaluate environment expression
-    | ExpList(first::rest) -> 
-        let updatedEnvironment, result = evaluate environment first
-        evaluate updatedEnvironment <| ExpList(rest)
-    //| ExpList(expressions) -> failwith (sprintf "list without application: %s" (expressions |> expressionsToString " "))
-    | Symbol(s) -> 
-        if environment.ContainsKey(s) then 
-            environment, environment.[s] [] 
-        else 
-            failwith (sprintf "Symbol '%s' not found." s)
+            failwith (sprintf "Function '%s' not found." lambdaName)
     | SeparateExpressions( expressions ) -> 
         expressions 
-        |> List.fold (fun (environment,expressions) expression -> 
-            let newEnv, result = evaluate environment expression
-            newEnv,expressions@[result])
-            (environment,[])
-        |> (fun (env, expressions) -> env, SeparateExpressions(expressions))
-    | value -> environment, value
+        |> List.fold (fun (environment,functions,expressions) expression -> 
+            let newEnv, newFunc, result = evaluate environment functions expression
+            newEnv,newFunc,expressions@[result])
+            (environment,functions,[])
+        |> (fun (env, func, expressions) -> env, func, SeparateExpressions(expressions))
+    | ExpList(expressions) -> 
+        printfn "ExpList: %A" expressions
+
+        let updatedEnvironment, updatedFunctions, evaluatedExpressions = 
+            expressions 
+            |> List.fold (fun (environment,functions,expressions) expression -> 
+                let newEnv, newFunc, result = evaluate environment functions expression
+                newEnv,newFunc,expressions@[result])
+                (environment,functions,[])
+            |> (fun (env, func, expressions) -> env, func, ExpList(expressions))
+
+        evaluatedExpressions |> evaluate updatedEnvironment updatedFunctions
+    | value -> 
+        printfn "Value: %A" value
+        environment, functions, value
 
 let print expression = printfn "%s" (expression |> toString)
