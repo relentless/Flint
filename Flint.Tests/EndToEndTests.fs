@@ -94,3 +94,10 @@ let ``Complex expression that evaluates to function works as first expression in
 let ``Lambda is evaluated using the following parameters`` () =
     test <@ execute "((lambda (x) (+ x x)) 1)"  = "2" @>
 
+[<Test>]
+let ``Lambda can use value declared previously`` () =
+    test <@ execute "(define z 10) ((lambda (x) (+ x z)) 5)"  = "\n15" @>
+
+[<Test>]
+let ``Lambda can use value declared previously when defines as a value`` () =
+    test <@ execute "(define z 10) (define addToZ (lambda (x) (+ x z))) (addToZ 3)"  = "\n\n13" @>

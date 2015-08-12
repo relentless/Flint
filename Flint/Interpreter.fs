@@ -42,55 +42,44 @@ let result (envirnment, functions, expression) = expression
 
 let rec evaluate (environment:EnvironmentDictionary) (functions:FunctionDictionary) = function
     | Symbol(symbolName) ->
-        //printfn "SYmbol: %s" symbolName
-        if environment.ContainsKey(symbolName) then 
-            environment, functions, environment.[symbolName]
-        else 
-            failwith (sprintf "Symbol '%s' not found." symbolName)
+        if not (environment |> Map.containsKey symbolName) then failwith (sprintf "Symbol '%s' not found." symbolName)
+        environment, functions, environment.[symbolName]
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
-        if (evaluate environment functions condition) |> result = Boolean(true) then 
-            environment, functions, (evaluate environment functions trueCase |> result) 
-        else 
-            environment, functions, (evaluate environment functions falseCase |> result)
+        let caseToUse = selectCase environment functions condition trueCase falseCase
+        environment, functions, (evaluate environment functions caseToUse |> result)
 //    | ExpList(Symbol("quote")::rest) -> environment, functions, ExpList(rest) // TODO: work out how to stop evaluation with quoted lists.  Make quoted an AST concept?
-    | ExpList(Symbol("define")::Symbol(name)::expression::_) -> environment.Add(name, expression), functions, Nil
+    | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> environment.Add(name, expression), functions, Nil
     | ExpList(Symbol("lambda")::ExpList(formals)::body::[]) -> 
-        environment, 
-        functions.Add("lambda1", 
-            fun args env -> 
-                let environmentWithArguments =
-                    List.zip formals args
-                    |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
-                evaluate environmentWithArguments functions body |> result), 
-        Lambda("lambda1")
+        environment, functions.Add("lambda1", createLambdaFunction functions formals body), Lambda("lambda1")
     | ExpList(Lambda(lambdaName)::arguments) -> 
-        if functions.ContainsKey(lambdaName) then
-            //printfn "Lambda: %s %A" lambdaName arguments
-            environment, functions, functions.[lambdaName] arguments environment
-        else
-            failwith (sprintf "Function '%s' not found." lambdaName)
-    | SeparateExpressions( expressions ) -> 
-        expressions 
-        |> List.fold (fun (environment,functions,expressions) expression -> 
-            let newEnv, newFunc, result = evaluate environment functions expression
-            newEnv,newFunc,expressions@[result])
-            (environment,functions,[])
-        |> (fun (env, func, expressions) -> env, func, SeparateExpressions(expressions))
+        if not (functions |> Map.containsKey lambdaName) then failwith (sprintf "Lambda '%s' not found." lambdaName)
+        environment, functions, functions.[lambdaName] arguments environment
+    | SeparateExpressions( expressions ) -> expressions |> foldExpressionList environment functions SeparateExpressions
     | ExpList(expressions) -> 
-        //printfn "ExpList: %A" expressions
-
-        let updatedEnvironment, updatedFunctions, evaluatedExpressions = 
-            expressions 
-            |> List.fold (fun (environment,functions,expressions) expression -> 
-                let newEnv, newFunc, result = evaluate environment functions expression
-                newEnv,newFunc,expressions@[result])
-                (environment,functions,[])
-            |> (fun (env, func, expressions) -> env, func, ExpList(expressions))
-
+        let updatedEnvironment, updatedFunctions, evaluatedExpressions = expressions |> foldExpressionList environment functions ExpList
         evaluatedExpressions |> evaluate updatedEnvironment updatedFunctions
-    | value -> 
-        //printfn "Value: %A" value
-        environment, functions, value
+    | value -> environment, functions, value
+
+and foldExpressionList environment functions expressionContainer expressions =
+    expressions 
+    |> List.fold (fun (environment,functions,expressions) expression -> 
+        let newEnv, newFunc, result = evaluate environment functions expression
+        newEnv,newFunc,expressions@[result])
+        (environment,functions,[])
+    |> (fun (env, func, expressions) -> env, func, expressionContainer expressions)
+
+and selectCase environment functions condition trueCase falseCase =
+    match (evaluate environment functions condition) |> result with
+        | Boolean(true) -> trueCase
+        | Boolean(false) -> falseCase
+        | _ -> failwith "invalid If case"
+
+and createLambdaFunction functions formals body =
+    fun args env -> 
+        let environmentWithArguments =
+            List.zip formals args
+            |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
+        evaluate environmentWithArguments functions body |> result
 
 let print expression = printfn "%s" (expression |> toString)
 
