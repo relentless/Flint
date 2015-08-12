@@ -11,9 +11,8 @@ type EvaluationRecord = { Expression: Expression; Environment: EnvironmentDictio
 let integrate environment functions expression =
     {Expression = expression; Environment = environment; Functions = functions }
 
-let getNumber (Number(n)) = n
-
 let numberReduction func args env =
+    let getNumber (Number(n)) = n
     args |> List.map getNumber |> (List.reduce func) |> Number
 
 let initialEnvironment =
@@ -94,12 +93,13 @@ let print expression = printfn "%s" (expression |> toString)
 
 // ** TODO **
 
-// - Get quotations working
+// - Get quotations working.  (Have Application and QuotedList as AST concepts?  Could output from parser.)
 // - Implement core library in scheme
 // - IDE
 // - Logging
 // - Better way of handling evaluation errors (error as AST concept?)
-// - Refactor evaluation code
+// - Make printer not output newlines for Nil expressions
+// - Implement numbering for multiple lambdas
 
 // ** To Try **
 

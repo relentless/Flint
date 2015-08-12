@@ -72,7 +72,7 @@ let ``Equal numeric`` () =
 
 [<Test>]
 let ``Multiple levels of expression get evaluated`` () =
-    test <@ execute """(if (< (+ 3 4) (- 4 3)) "never happen" (cons (car '(1 2 3)) (cdr '(3 4 5))))""" = "(1 4 5)"  @>
+    test <@ execute """(if (< (+ 3 4) (- 4 3)) "never happen" (+ (+ (/ 20 2) (* 2 3)) (- (+ 2 2) (- 4 1))))""" = "17"  @>
 
 [<Test>]
 let ``Define adds value to environment`` () =
@@ -89,7 +89,7 @@ let ``Lambdas evaluate to a Procedure`` () =
 
 [<Test>]
 let ``Complex expression that evaluates to function works as first expression in a list`` () =
-    test <@ execute "((if #t + -) 1 2)"  = "3" @>
+    test <@ execute "((if #t (if #f - +) -) 1 2)"  = "3" @>
 
 [<Test>]
 let ``Lambda is evaluated using the following parameters`` () =
