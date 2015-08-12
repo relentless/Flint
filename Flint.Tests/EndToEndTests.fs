@@ -79,26 +79,18 @@ let ``Define adds value to environment`` () =
     test <@ environment.["x"] = Number(10) @>
 
 [<Test>]
-let ``TODO: Invalid function gives reasonable message`` () =
-    try
-        execute "(whatever 3 4)" |> ignore
-        failwith "exception not thrown as expected"
-    with
-    | ex -> test <@ ex.Message = "Function 'whatever' not found."  @>
-
-[<Test>]
-let ``TODO: Built-in procedures evaluate to a Procedure`` () =
+let ``Built-in procedures evaluate to a Procedure`` () =
     test <@ execute "+"  = "#<procedure:+>" @>
 
 [<Test>]
-let ``TODO: Lambdas evaluate to a Procedure`` () =
+let ``Lambdas evaluate to a Procedure`` () =
     test <@ execute "(lambda () 0)"  = "#<procedure:lambda1>" @>
 
 [<Test>]
-let ``TODO: Complex expression that evaluates to function works as first expression in a list`` () =
+let ``Complex expression that evaluates to function works as first expression in a list`` () =
     test <@ execute "((if #t + -) 1 2)"  = "3" @>
 
 [<Test>]
-let ``TODO: Lambda is evaluated using the following parameters`` () =
+let ``Lambda is evaluated using the following parameters`` () =
     test <@ execute "((lambda (x) (+ x x)) 1)"  = "2" @>
 

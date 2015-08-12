@@ -42,18 +42,18 @@ let ``Interpreting separate expressions evaluates to separate expressions`` () =
     test <@ evalInitial <| SeparateExpressions( [Number(3); Number(4); Number(5)]) = SeparateExpressions( [Number(3); Number(4); Number(5)]) @>
 
 [<Test>]
-let ``TODO: Interpreting lambda evaluates to Lambda with name lambda1`` () =
+let ``Interpreting lambda evaluates to Lambda with name lambda1`` () =
     test <@ evalInitial <| ExpList([Symbol("lambda"); ExpList([Symbol("x")]); ExpList([Symbol("+"); Symbol("x"); Symbol("x")])]) = Lambda("lambda1") @>
     
 [<Test>]
-let ``TODO: Interpreting lambda adds a function to the function list`` () =
+let ``Interpreting lambda adds a function to the function list`` () =
     let environment, functions, result = evaluate initialEnvironment initialFunctions <| ExpList([Symbol("lambda"); ExpList([]); Number(0)])
     test <@ functions.ContainsKey("lambda1") @>
 
 [<Test>]
-let ``TODO: Interpreting an applied lambda without params works`` () =
+let ``Interpreting an applied lambda without params works`` () =
     test <@ evalInitial <| ExpList([ExpList([Symbol("lambda"); ExpList([]); Number(0)])]) = Number(0) @>
     
 [<Test>]
-let ``TODO: Interpreting Complex expression that evaluates to function works as first expression in a list`` () =
+let ``Interpreting Complex expression that evaluates to function works as first expression in a list`` () =
     test <@ evalInitial <| ExpList([ExpList([Symbol("if"); Boolean(true); Symbol("+"); Symbol("-")]); Number(1); Number(2)]) = Number(3) @>
