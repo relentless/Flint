@@ -10,7 +10,8 @@ open SyntaxTree
 let execute text =
     text
     |> parse
-    |> evaluate initialEnvironment initialFunctions
+    |> integrate initialEnvironment initialFunctions
+    |> evaluate 
     |> result
     |> toString 
 
@@ -75,8 +76,8 @@ let ``Multiple levels of expression get evaluated`` () =
 
 [<Test>]
 let ``Define adds value to environment`` () =
-    let environment, functions, result = "(define x 10)" |> parse |> evaluate initialEnvironment initialFunctions
-    test <@ environment.["x"] = Number(10) @>
+    let evaluated = "(define x 10)" |> parse |> integrate initialEnvironment initialFunctions |> evaluate
+    test <@ evaluated.Environment.["x"] = Number(10) @>
 
 [<Test>]
 let ``Built-in procedures evaluate to a Procedure`` () =

@@ -6,6 +6,11 @@ open Printer
 type EnvironmentDictionary = Map<string,Expression>
 type FunctionDictionary = Map<string,(Expression list -> EnvironmentDictionary -> Expression)>
 
+type EvaluationRecord = { Expression: Expression; Environment: EnvironmentDictionary; Functions: FunctionDictionary }
+
+let integrate environment functions expression =
+    {Expression = expression; Environment = environment; Functions = functions }
+
 let getNumber (Number(n)) = n
 
 let numberReduction func args env =
@@ -38,38 +43,42 @@ let (initialFunctions:FunctionDictionary) =
         .Add("<", fun args env -> match args with Number(arg1)::Number(arg2)::[] -> Boolean(arg1 < arg2))
         .Add("=", fun args env -> match args with Number(arg1)::Number(arg2)::[] -> Boolean(arg1 = arg2))
 
-let result (envirnment, functions, expression) = expression
+let result evaluationRecord = evaluationRecord.Expression
 
-let rec evaluate (environment:EnvironmentDictionary) (functions:FunctionDictionary) = function
+let rec evaluate evaluationRecord =
+
+    match evaluationRecord.Expression with
     | Symbol(symbolName) ->
-        if not (environment |> Map.containsKey symbolName) then failwith (sprintf "Symbol '%s' not found." symbolName)
-        environment, functions, environment.[symbolName]
+        if not (evaluationRecord.Environment |> Map.containsKey symbolName) then failwith (sprintf "Symbol '%s' not found." symbolName)
+        {evaluationRecord with Expression = evaluationRecord.Environment.[symbolName]}
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
-        let caseToUse = selectCase environment functions condition trueCase falseCase
-        environment, functions, (evaluate environment functions caseToUse |> result)
+        let caseToUse = selectCase evaluationRecord.Environment evaluationRecord.Functions condition trueCase falseCase
+        evaluate {evaluationRecord with Expression = caseToUse}
 //    | ExpList(Symbol("quote")::rest) -> environment, functions, ExpList(rest) // TODO: work out how to stop evaluation with quoted lists.  Make quoted an AST concept?
-    | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> environment.Add(name, expression), functions, Nil
+    | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> 
+        {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
     | ExpList(Symbol("lambda")::ExpList(formals)::body::[]) -> 
-        environment, functions.Add("lambda1", createLambdaFunction functions formals body), Lambda("lambda1")
+        {evaluationRecord with Expression = Lambda("lambda1"); Functions = evaluationRecord.Functions.Add("lambda1", createLambdaFunction evaluationRecord.Functions formals body)}
     | ExpList(Lambda(lambdaName)::arguments) -> 
-        if not (functions |> Map.containsKey lambdaName) then failwith (sprintf "Lambda '%s' not found." lambdaName)
-        environment, functions, functions.[lambdaName] arguments environment
-    | SeparateExpressions( expressions ) -> expressions |> foldExpressionList environment functions SeparateExpressions
+        if not (evaluationRecord.Functions |> Map.containsKey lambdaName) then failwith (sprintf "Lambda '%s' not found." lambdaName)
+        {evaluationRecord with Expression = evaluationRecord.Functions.[lambdaName] arguments evaluationRecord.Environment}
+    | SeparateExpressions( expressions ) -> expressions |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
     | ExpList(expressions) -> 
-        let updatedEnvironment, updatedFunctions, evaluatedExpressions = expressions |> foldExpressionList environment functions ExpList
-        evaluatedExpressions |> evaluate updatedEnvironment updatedFunctions
-    | value -> environment, functions, value
+        expressions 
+        |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions ExpList
+        |> evaluate
+    | value -> evaluationRecord
 
 and foldExpressionList environment functions expressionContainer expressions =
     expressions 
     |> List.fold (fun (environment,functions,expressions) expression -> 
-        let newEnv, newFunc, result = evaluate environment functions expression
-        newEnv,newFunc,expressions@[result])
+        let newRecord = evaluate {Expression = expression; Environment = environment; Functions = functions }
+        newRecord.Environment,newRecord.Functions,expressions@[newRecord.Expression])
         (environment,functions,[])
-    |> (fun (env, func, expressions) -> env, func, expressionContainer expressions)
+    |> (fun (env, func, expressions) -> {Expression = expressionContainer expressions; Environment = env; Functions = func} )
 
 and selectCase environment functions condition trueCase falseCase =
-    match (evaluate environment functions condition) |> result with
+    match (evaluate {Expression = condition; Environment = environment; Functions = functions}).Expression with
         | Boolean(true) -> trueCase
         | Boolean(false) -> falseCase
         | _ -> failwith "invalid If case"
@@ -79,7 +88,7 @@ and createLambdaFunction functions formals body =
         let environmentWithArguments =
             List.zip formals args
             |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
-        evaluate environmentWithArguments functions body |> result
+        (evaluate {Expression = body; Environment = environmentWithArguments; Functions = functions}).Expression
 
 let print expression = printfn "%s" (expression |> toString)
 

@@ -6,7 +6,9 @@ open SyntaxTree
 open Interpreter
 
 let evalInitial expression = 
-    evaluate initialEnvironment initialFunctions expression
+    expression
+    |> integrate initialEnvironment initialFunctions 
+    |> evaluate 
     |> result
 
 [<Test>]
@@ -47,8 +49,8 @@ let ``Interpreting lambda evaluates to Lambda with name lambda1`` () =
     
 [<Test>]
 let ``Interpreting lambda adds a function to the function list`` () =
-    let environment, functions, result = evaluate initialEnvironment initialFunctions <| ExpList([Symbol("lambda"); ExpList([]); Number(0)])
-    test <@ functions.ContainsKey("lambda1") @>
+    let result = ExpList([Symbol("lambda"); ExpList([]); Number(0)]) |> integrate initialEnvironment initialFunctions |> evaluate
+    test <@ result.Functions.ContainsKey("lambda1") @>
 
 [<Test>]
 let ``Interpreting an applied lambda without params works`` () =

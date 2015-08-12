@@ -1,11 +1,6 @@
 ﻿open Parser
 open Interpreter
 
-let execute environment functions text =
-    text
-    |> parse
-    |> evaluate environment functions
-
 [<EntryPoint>]
 let main _ = 
 
@@ -18,9 +13,9 @@ let main _ =
         match System.Console.ReadLine() with
         | "exit" | "Exit" -> ()
         | input -> 
-            let environment, functions, result = input |> parse |> evaluate environment functions
-            print result
-            inputLoop environment functions
+            let evaluated = input |> parse |> integrate environment functions |> evaluate
+            print evaluated.Expression
+            inputLoop evaluated.Environment evaluated.Functions
 
     inputLoop initialEnvironment initialFunctions
 
