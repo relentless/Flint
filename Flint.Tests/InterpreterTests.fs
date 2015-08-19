@@ -36,10 +36,6 @@ let ``Interpreting symbolic atom in environment evaluates to value in environmen
     test <@ evalInitial <| SeparateExpressions( [ExpList([Symbol("define");Symbol("x");Number(99)]); Symbol("x") ]) = SeparateExpressions( [Nil; Number(99)]) @>
 
 [<Test>]
-let ``Interpreting quoted list evaluates to list`` () =
-    test <@ evalInitial <| ExpList( [Symbol("quote"); Number(1); Number(2)]) = ExpList( [Number(1); Number(2)]) @>
-
-[<Test>]
 let ``Interpreting separate expressions evaluates to separate expressions`` () =
     test <@ evalInitial <| SeparateExpressions( [Number(3); Number(4); Number(5)]) = SeparateExpressions( [Number(3); Number(4); Number(5)]) @>
 
@@ -59,3 +55,8 @@ let ``Interpreting an applied lambda without params works`` () =
 [<Test>]
 let ``Interpreting Complex expression that evaluates to function works as first expression in a list`` () =
     test <@ evalInitial <| ExpList([ExpList([Symbol("if"); Boolean(true); Symbol("+"); Symbol("-")]); Number(1); Number(2)]) = Number(3) @>
+
+[<Test>]
+let ``Interpreting an ExpList with a quote symbol gives a QuotedList`` () =
+    test <@ evalInitial <| ExpList([Symbol("quote"); Number(0)]) = QuotedList([Number(0)]) @>
+    

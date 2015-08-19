@@ -7,5 +7,6 @@ type Expression =
     | Boolean of bool
     | ExpList of Expression list
     | SeparateExpressions of Expression list
+    | QuotedList of Expression list
     | Lambda of name: string
     | Nil

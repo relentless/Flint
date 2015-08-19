@@ -35,9 +35,9 @@ let (initialFunctions:FunctionDictionary) =
         .Add("-", (numberReduction (-)))
         .Add("/", (numberReduction (/)))
         .Add("*", (numberReduction (*)))
-        .Add("cons", fun args env -> match args with head::ExpList(tail)::[] -> ExpList(head::tail))
-        .Add("car", fun args env -> match args with ExpList(head::_)::[] -> head)
-        .Add("cdr", fun args env -> match args with ExpList(_::tail)::[] -> ExpList(tail))
+        .Add("cons", fun args env -> match args with head::QuotedList(tail)::[] -> QuotedList(head::tail))
+        .Add("car", fun args env -> match args with QuotedList(head::_)::[] -> head)
+        .Add("cdr", fun args env -> match args with QuotedList(_::tail)::[] -> QuotedList(tail))
         .Add(">", fun args env -> match args with Number(arg1)::Number(arg2)::[] -> Boolean(arg1 > arg2))
         .Add("<", fun args env -> match args with Number(arg1)::Number(arg2)::[] -> Boolean(arg1 < arg2))
         .Add("=", fun args env -> match args with Number(arg1)::Number(arg2)::[] -> Boolean(arg1 = arg2))
@@ -53,7 +53,7 @@ let rec evaluate evaluationRecord =
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
         let caseToUse = selectCase evaluationRecord.Environment evaluationRecord.Functions condition trueCase falseCase
         evaluate {evaluationRecord with Expression = caseToUse}
-//    | ExpList(Symbol("quote")::rest) -> environment, functions, ExpList(rest) // TODO: work out how to stop evaluation with quoted lists.  Make quoted an AST concept?
+    | ExpList(Symbol("quote")::rest) -> {evaluationRecord with Expression = QuotedList(rest)}
     | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> 
         {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
     | ExpList(Symbol("lambda")::ExpList(formals)::body::[]) -> 
@@ -93,7 +93,8 @@ let print expression = printfn "%s" (expression |> toString)
 
 // ** TODO **
 
-// - Get quotations working.  (Have Application and QuotedList as AST concepts?  Could output from parser.)
+// - Add let
+// - Check closures
 // - Implement core library in scheme
 // - IDE
 // - Logging
@@ -107,3 +108,4 @@ let print expression = printfn "%s" (expression |> toString)
 // - types
 // - Minimal primitives
 // - Write parser by hand
+// - Code Golf version
