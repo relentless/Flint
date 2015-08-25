@@ -1,0 +1,3 @@
+(define not 
+	(lambda (statement) 
+		(eq? statement #f)))

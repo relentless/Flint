@@ -7,14 +7,6 @@ open Interpreter
 open Printer
 open SyntaxTree
 
-let execute text =
-    text
-    |> parse
-    |> integrate initialEnvironment initialFunctions
-    |> evaluate 
-    |> result
-    |> toString 
-
 [<Test>]
 let ``Addition`` () =
     test <@ execute "(+ 7 8 9)" = "24"  @>
@@ -76,7 +68,7 @@ let ``Multiple levels of expression get evaluated`` () =
 
 [<Test>]
 let ``Define adds value to environment`` () =
-    let evaluated = "(define x 10)" |> parse |> integrate initialEnvironment initialFunctions |> evaluate
+    let evaluated = "(define x 10)" |> parse |> integrate CoreFunctions.initialEnvironment CoreFunctions.initialFunctions |> evaluate
     test <@ evaluated.Environment.["x"] = Number(10) @>
 
 [<Test>]
@@ -102,3 +94,15 @@ let ``Lambda can use value declared previously`` () =
 [<Test>]
 let ``Lambda can use value declared previously when defines as a value`` () =
     test <@ execute "(define z 10) (define addToZ (lambda (x) (+ x z))) (addToZ 3)"  = "\n\n13" @>
+
+[<Test>]
+let ``Lambda can be recursive`` () =
+    test <@ execute "(define fib (lambda (n) (if (< n 3) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 5)"  = "\n8" @>
+
+[<Test>]
+let ``Eq? works with booleans`` () =
+    test <@ execute "(eq? #t #f)"  = "#f" @>
+
+[<Test>]
+let ``Eq? works with empty lists`` () =
+    test <@ execute "(eq? (cdr '(1)) '())"  = "#t" @>

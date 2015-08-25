@@ -4,6 +4,7 @@ open NUnit.Framework
 open Swensen.Unquote
 open SyntaxTree
 open Interpreter
+open CoreFunctions
 
 let evalInitial expression = 
     expression

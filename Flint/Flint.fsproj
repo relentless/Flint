@@ -52,9 +52,13 @@
     <Compile Include="SyntaxTree.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Printer.fs" />
+    <Compile Include="CoreFunctions.fs" />
     <Compile Include="Interpreter.fs" />
     <Content Include="packages.config" />
     <Content Include="app.config" />
+    <Content Include="CoreLib.flint">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FParsec">

@@ -1,5 +1,6 @@
 ﻿open Parser
 open Interpreter
+open CoreFunctions
 
 [<EntryPoint>]
 let main _ = 
@@ -8,16 +9,16 @@ let main _ =
 
     printfn "Type exit to quit\n"
 
-    let rec inputLoop environment functions =
+    let rec inputLoop evaluationRecord =
         printf "\n> "
         match System.Console.ReadLine() with
         | "exit" | "Exit" -> ()
         | input -> 
-            let evaluated = input |> parse |> integrate environment functions |> evaluate
+            let evaluated = {evaluationRecord with Expression = input |> parse} |> evaluate
             print evaluated.Expression
-            inputLoop evaluated.Environment evaluated.Functions
+            inputLoop evaluated
 
-    inputLoop initialEnvironment initialFunctions
+    loadCoreLib() |> inputLoop
 
     printfn "Goodbye"
 

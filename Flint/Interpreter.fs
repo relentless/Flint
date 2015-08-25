@@ -1,46 +1,13 @@
 ﻿module Interpreter
 
+open Parser
 open SyntaxTree
 open Printer
-
-type EnvironmentDictionary = Map<string,Expression>
-type FunctionDictionary = Map<string,(Expression list -> EnvironmentDictionary -> Expression)>
-
-type EvaluationRecord = { Expression: Expression; Environment: EnvironmentDictionary; Functions: FunctionDictionary }
+open CoreFunctions
+open System.IO
 
 let integrate environment functions expression =
     {Expression = expression; Environment = environment; Functions = functions }
-
-let numberReduction func args env =
-    let getNumber (Number(n)) = n
-    args |> List.map getNumber |> (List.reduce func) |> Number
-
-let initialEnvironment =
-    Map.empty
-        .Add("+", Lambda("+"))
-        .Add("-", Lambda("-"))
-        .Add("/", Lambda("/"))
-        .Add("*", Lambda("*"))
-        .Add("cons", Lambda("cons"))
-        .Add("car", Lambda("car"))
-        .Add("cdr", Lambda("cdr"))
-        .Add(">", Lambda(">"))
-        .Add("<", Lambda("<"))
-        .Add("=", Lambda("="))
-        .Add("testValue", Number(10))
-
-let (initialFunctions:FunctionDictionary) =
-    Map.empty
-        .Add("+", (numberReduction (+)))
-        .Add("-", (numberReduction (-)))
-        .Add("/", (numberReduction (/)))
-        .Add("*", (numberReduction (*)))
-        .Add("cons", fun args env -> match args with head::QuotedList(tail)::[] -> QuotedList(head::tail))
-        .Add("car", fun args env -> match args with QuotedList(head::_)::[] -> head)
-        .Add("cdr", fun args env -> match args with QuotedList(_::tail)::[] -> QuotedList(tail))
-        .Add(">", fun args env -> match args with Number(arg1)::Number(arg2)::[] -> Boolean(arg1 > arg2))
-        .Add("<", fun args env -> match args with Number(arg1)::Number(arg2)::[] -> Boolean(arg1 < arg2))
-        .Add("=", fun args env -> match args with Number(arg1)::Number(arg2)::[] -> Boolean(arg1 = arg2))
 
 let result evaluationRecord = evaluationRecord.Expression
 
@@ -91,6 +58,18 @@ and createLambdaFunction functions formals body =
 
 let print expression = printfn "%s" (expression |> toString)
 
+let loadCoreLib() =
+    File.ReadAllText("CoreLib.flint")
+    |> parse
+    |> integrate initialEnvironment initialFunctions
+    |> evaluate
+
+let execute text =
+    {loadCoreLib() with Expression = text |> parse}
+    |> evaluate 
+    |> result
+    |> toString 
+
 // ** TODO **
 
 // - Add let
@@ -100,7 +79,7 @@ let print expression = printfn "%s" (expression |> toString)
 // - Logging
 // - Better way of handling evaluation errors (error as AST concept?)
 // - Make printer not output newlines for Nil expressions
-// - Implement numbering for multiple lambdas
+// - multiple lambdas
 
 // ** To Try **
 

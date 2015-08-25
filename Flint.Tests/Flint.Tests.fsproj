@@ -55,6 +55,7 @@
     <Compile Include="InterpreterTests.fs" />
     <Compile Include="EndToEndTests.fs" />
     <Compile Include="PrinterTests.fs" />
+    <Compile Include="CoreLibTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
