@@ -21,3 +21,7 @@ let ``TODO: and multiple args is true`` () =
 [<Test>]
 let ``TODO: and multiple args is false`` () =
     test <@ execute "(and #t #t #f #t)" = "#f"  @>
+
+[<Test>]
+let ``TODO: cond with single expression true`` () =
+    test <@ execute "(cond (#t 99))" = "99"  @>

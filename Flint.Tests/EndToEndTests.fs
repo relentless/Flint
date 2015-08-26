@@ -106,3 +106,7 @@ let ``Eq? works with booleans`` () =
 [<Test>]
 let ``Eq? works with empty lists`` () =
     test <@ execute "(eq? (cdr '(1)) '())"  = "#t" @>
+
+[<Test>]
+let ``Multiple lambdas work`` () =
+    test <@ execute "((lambda (y) (* y y)) ((lambda (x) (+ x x)) 5))"  = "100" @>
