@@ -40,14 +40,12 @@ let ``Interpreting symbolic atom in environment evaluates to value in environmen
 let ``Interpreting separate expressions evaluates to separate expressions`` () =
     test <@ evalInitial <| SeparateExpressions( [Number(3); Number(4); Number(5)]) = SeparateExpressions( [Number(3); Number(4); Number(5)]) @>
 
-[<Test>]
-let ``Interpreting lambda evaluates to Lambda with name lambda1`` () =
-    test <@ evalInitial <| ExpList([Symbol("lambda"); ExpList([Symbol("x")]); ExpList([Symbol("+"); Symbol("x"); Symbol("x")])]) = Lambda("lambda1") @>
-    
+
 [<Test>]
 let ``Interpreting lambda adds a function to the function list`` () =
+    let initialFunctionCount = initialFunctions.Count
     let result = ExpList([Symbol("lambda"); ExpList([]); Number(0)]) |> integrate initialEnvironment initialFunctions |> evaluate
-    test <@ result.Functions.ContainsKey("lambda1") @>
+    test <@ result.Functions.Count = initialFunctionCount + 1 @>
 
 [<Test>]
 let ``Interpreting an applied lambda without params works`` () =

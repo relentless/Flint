@@ -24,7 +24,8 @@ let rec evaluate evaluationRecord =
     | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> 
         {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
     | ExpList(Symbol("lambda")::ExpList(formals)::body::[]) -> 
-        {evaluationRecord with Expression = Lambda("lambda1"); Functions = evaluationRecord.Functions.Add("lambda1", createLambdaFunction evaluationRecord.Functions formals body)}
+        let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
+        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaFunction evaluationRecord.Functions formals body)}
     | ExpList(Lambda(lambdaName)::arguments) -> 
         if not (evaluationRecord.Functions |> Map.containsKey lambdaName) then failwith (sprintf "Lambda '%s' not found." lambdaName)
         {evaluationRecord with Expression = evaluationRecord.Functions.[lambdaName] arguments evaluationRecord.Environment}
@@ -80,7 +81,6 @@ let execute text =
 // - Logging
 // - Better way of handling evaluation errors (error as AST concept?)
 // - Make printer not output newlines for Nil expressions
-// - multiple lambdas
 
 // ** To Try **
 

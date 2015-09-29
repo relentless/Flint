@@ -77,7 +77,7 @@ let ``Built-in procedures evaluate to a Procedure`` () =
 
 [<Test>]
 let ``Lambdas evaluate to a Procedure`` () =
-    test <@ execute "(lambda () 0)"  = "#<procedure:lambda1>" @>
+    test <@ (execute "(lambda () 0)").[0..17]  = "#<procedure:lambda" @>
 
 [<Test>]
 let ``Complex expression that evaluates to function works as first expression in a list`` () =
@@ -110,3 +110,7 @@ let ``Eq? works with empty lists`` () =
 [<Test>]
 let ``Multiple lambdas work`` () =
     test <@ execute "((lambda (y) (* y y)) ((lambda (x) (+ x x)) 5))"  = "100" @>
+
+[<Test>]
+let ``Varargs work in lambda`` () =
+    test <@ execute "((lambda args args) 1 2 3)"  = "'(1 2 3)" @>
