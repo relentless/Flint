@@ -23,6 +23,9 @@ let rec evaluate evaluationRecord =
     | ExpList(Symbol("quote")::rest) -> {evaluationRecord with Expression = QuotedList(rest)}
     | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> 
         {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
+    | ExpList(Symbol("lambda")::Symbol(formals)::body::[]) -> // this doesn't work as when it's called, the number of ars doesn't match.  Create AST concept for LambdaVar or VarArg?
+        let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
+        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaFunction evaluationRecord.Functions [Symbol(formals)] body)}
     | ExpList(Symbol("lambda")::ExpList(formals)::body::[]) -> 
         let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
         {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaFunction evaluationRecord.Functions formals body)}
@@ -77,8 +80,6 @@ let execute text =
 // - varargs - different length arguments
 // - Check closures
 // - Implement core library in scheme
-// - IDE
-// - Logging
 // - Better way of handling evaluation errors (error as AST concept?)
 // - Make printer not output newlines for Nil expressions
 
