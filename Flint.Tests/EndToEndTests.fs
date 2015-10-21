@@ -18,17 +18,10 @@ let ``Subtraction`` () =
 [<Test>]
 let ``Multiplication`` () =
     test <@ execute "(* 3 4 10)" = "120"  @>
+
 [<Test>]
 let ``Division`` () =
     test <@ execute "(/ 100 2 5)" = "10"  @>
-
-[<Test>]
-let ``Quoted list`` () =
-    test <@ execute "(quote #t #f 99)" = "(#t #f 99)"  @>
-
-[<Test>]
-let ``Quotation shortcut operator`` () =
-    test <@ execute "'(2 3 4)" = "(2 3 4)"  @>
 
 [<Test>]
 let ``Cons`` () =
@@ -114,3 +107,15 @@ let ``Multiple lambdas work`` () =
 [<Test>]
 let ``Varargs work in lambda`` () =
     test <@ execute "((lambda args args) 1 2 3)"  = "'(1 2 3)" @>
+
+[<Test>]
+let ``Quoted list results in quoted list`` () =
+    test <@ execute "(quote (#t #f 99))" = "'(#t #f 99)"  @>
+
+[<Test>]
+let ``Quotation shortcut operator results in same thing returned`` () =
+    test <@ execute "'(2 3 4)" = "'(2 3 4)"  @>
+
+[<Test>]
+let ``Quote does not evaluate expression`` () =
+    test <@ execute "(define x (lambda (y) (* y y))) '(x 3)" = "\n'(x 3)"  @>

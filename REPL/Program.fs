@@ -20,6 +20,6 @@ let main _ =
 
     loadCoreLib() |> inputLoop
 
-    printfn "Goodbye"
+    printfn "(Goodbye!)"
 
     0

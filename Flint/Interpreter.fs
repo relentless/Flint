@@ -23,9 +23,9 @@ let rec evaluate evaluationRecord =
     | ExpList(Symbol("quote")::rest) -> {evaluationRecord with Expression = QuotedList(rest)}
     | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> 
         {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
-    | ExpList(Symbol("lambda")::Symbol(formals)::body::[]) -> // this doesn't work as when it's called, the number of ars doesn't match.  Create AST concept for LambdaVar or VarArg?
+    | ExpList(Symbol("lambda")::Symbol(formals)::body::[]) ->
         let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
-        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaFunction evaluationRecord.Functions [Symbol(formals)] body)}
+        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaVarargsFunction evaluationRecord.Functions formals body)}
     | ExpList(Symbol("lambda")::ExpList(formals)::body::[]) -> 
         let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
         {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaFunction evaluationRecord.Functions formals body)}
@@ -59,6 +59,11 @@ and createLambdaFunction functions formals body =
             List.zip formals args
             |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
         (evaluate {Expression = body; Environment = environmentWithArguments; Functions = functions}).Expression
+
+and createLambdaVarargsFunction functions formalsVarArg body =
+    fun args env -> 
+        let environmentWithArgumentsAsList = env.Add(formalsVarArg, ExpList(args))
+        (evaluate {Expression = body; Environment = environmentWithArgumentsAsList; Functions = functions}).Expression
 
 let print expression = printfn "%s" (expression |> toString)
 
