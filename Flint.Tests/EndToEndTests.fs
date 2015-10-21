@@ -25,7 +25,7 @@ let ``Division`` () =
 
 [<Test>]
 let ``Cons`` () =
-    test <@ execute "(cons 1 '(2 3 4))" = "(1 2 3 4)"  @>
+    test <@ execute "(cons 1 '(2 3 4))" = "'(1 2 3 4)"  @>
 
 [<Test>]
 let ``Car`` () =
@@ -33,7 +33,7 @@ let ``Car`` () =
 
 [<Test>]
 let ``Cdr`` () =
-    test <@ execute "(cdr '(4 5 6))" = "(5 6)"  @>
+    test <@ execute "(cdr '(4 5 6))" = "'(5 6)"  @>
 
 [<Test>]
 let ``If true`` () =

@@ -8,7 +8,7 @@ let rec toString = function
     | Symbol(s) -> sprintf ":%s" s
     | Boolean(b) -> sprintf "%s" (if b then "#t" else "#f")
     | ExpList(expressions) -> sprintf "(%s)" (expressions |> expressionsToString " ")
-    | QuotedList(expressions) -> sprintf "(%s)" (expressions |> expressionsToString " ")
+    | QuotedList(expressions) -> sprintf "'(%s)" (expressions |> expressionsToString " ")
     | SeparateExpressions(expressions) -> sprintf "%s" (expressions |> expressionsToString "\n")
     | Lambda(l) -> sprintf "#<procedure:%s>" l
     | Nil -> ""
