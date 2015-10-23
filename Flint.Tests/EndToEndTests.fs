@@ -125,8 +125,12 @@ let ``Quote does not evaluate expression`` () =
     test <@ execute "(define x (lambda (y) (* y y))) '(x 3)" = "'(x 3)"  @>
 
 [<Test>]
+let ``When a lambda contains more than one expression, the last expression is returned`` () =
+    test <@ execute "((lambda () 2 3 4))" = "4"  @>
+
+[<Test>]
 let ``Variable defined within a lambda works`` () =
-    test <@ execute "(define a (lambda (b) (define c 5) (+ c b))) (a 10)" = "15"  @>
+    test <@ execute "((lambda (b) (define c 5) (+ c b)) 10)" = "15"  @>
 
 [<Test>]
 let ``Lambda defined within a lambda works`` () =

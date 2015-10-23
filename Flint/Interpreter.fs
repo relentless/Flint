@@ -23,16 +23,17 @@ let rec evaluate evaluationRecord =
     | ExpList(Symbol("quote")::ExpList(expressions)::[]) -> {evaluationRecord with Expression = QuotedList(expressions)}
     | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> 
         {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
-    | ExpList(Symbol("lambda")::Symbol(formals)::body::[]) ->
+    | ExpList(Symbol("lambda")::Symbol(formals)::body) ->
         let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
-        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaVarargsFunction evaluationRecord.Functions formals body)}
-    | ExpList(Symbol("lambda")::ExpList(formals)::body::[]) -> 
+        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaVarargsFunction evaluationRecord.Functions formals (MultipleExpressions(body)))}
+    | ExpList(Symbol("lambda")::ExpList(formals)::body) -> 
         let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
-        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaFunction evaluationRecord.Functions formals body)}
+        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaFunction evaluationRecord.Functions formals (MultipleExpressions(body)))}
     | ExpList(Lambda(lambdaName)::arguments) -> 
         if not (evaluationRecord.Functions |> Map.containsKey lambdaName) then failwith (sprintf "Lambda '%s' not found." lambdaName)
         {evaluationRecord with Expression = evaluationRecord.Functions.[lambdaName] arguments evaluationRecord.Environment}
     | SeparateExpressions( expressions ) -> expressions |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
+    | MultipleExpressions( expressions ) -> expressions |> getLastExpression evaluationRecord.Environment evaluationRecord.Functions
     | ExpList(expressions) -> 
         expressions 
         |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions ExpList
@@ -46,6 +47,14 @@ and foldExpressionList environment functions expressionContainer expressions =
         newRecord.Environment,newRecord.Functions,expressions@[newRecord.Expression])
         (environment,functions,[])
     |> (fun (env, func, expressions) -> {Expression = expressionContainer expressions; Environment = env; Functions = func} )
+
+and getLastExpression environment functions expressions =
+    expressions 
+    |> List.fold (fun (environment,functions,expressions) expression -> 
+        let newRecord = evaluate {Expression = expression; Environment = environment; Functions = functions }
+        newRecord.Environment,newRecord.Functions,newRecord.Expression)
+        (environment,functions,Nil)
+    |> (fun (env, func, expressions) -> {Expression = expressions; Environment = env; Functions = func} )
 
 and selectCase environment functions condition trueCase falseCase =
     match (evaluate {Expression = condition; Environment = environment; Functions = functions}).Expression with
@@ -81,12 +90,10 @@ let execute text =
 
 // ** TODO **
 
-// - Variables within lambdas
 // - Add let
 // - Check closures
 // - Implement core library in scheme
 // - Better way of handling evaluation errors (error as AST concept?)
-// - Make printer not output newlines for Nil expressions
 
 // ** To Try **
 

@@ -15,11 +15,11 @@ let ``not false`` () =
     test <@ execute "(not #f)" = "#t"  @>
 
 [<Test>]
-let ``TODO: and multiple args is true`` () =
+let ``and multiple args is true`` () =
     test <@ execute "(and #t #t #t #t)" = "#t"  @>
 
 [<Test>]
-let ``TODO: and multiple args is false`` () =
+let ``and multiple args is false`` () =
     test <@ execute "(and #t #t #f #t)" = "#f"  @>
 
 [<Test>]
