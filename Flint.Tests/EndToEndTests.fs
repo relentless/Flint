@@ -82,15 +82,15 @@ let ``Lambda is evaluated using the following parameters`` () =
 
 [<Test>]
 let ``Lambda can use value declared previously`` () =
-    test <@ execute "(define z 10) ((lambda (x) (+ x z)) 5)"  = "\n15" @>
+    test <@ execute "(define z 10) ((lambda (x) (+ x z)) 5)"  = "15" @>
 
 [<Test>]
 let ``Lambda can use value declared previously when defines as a value`` () =
-    test <@ execute "(define z 10) (define addToZ (lambda (x) (+ x z))) (addToZ 3)"  = "\n\n13" @>
+    test <@ execute "(define z 10) (define addToZ (lambda (x) (+ x z))) (addToZ 3)"  = "13" @>
 
 [<Test>]
 let ``Lambda can be recursive`` () =
-    test <@ execute "(define fib (lambda (n) (if (< n 3) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 5)"  = "\n8" @>
+    test <@ execute "(define fib (lambda (n) (if (< n 3) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 5)"  = "8" @>
 
 [<Test>]
 let ``Eq? works with booleans`` () =
@@ -122,7 +122,7 @@ let ``Quotation shortcut operator results in same thing returned`` () =
 
 [<Test>]
 let ``Quote does not evaluate expression`` () =
-    test <@ execute "(define x (lambda (y) (* y y))) '(x 3)" = "\n'(x 3)"  @>
+    test <@ execute "(define x (lambda (y) (* y y))) '(x 3)" = "'(x 3)"  @>
 
 [<Test>]
 let ``Variable defined within a lambda works`` () =
@@ -130,4 +130,4 @@ let ``Variable defined within a lambda works`` () =
 
 [<Test>]
 let ``Lambda defined within a lambda works`` () =
-    test <@ execute "(define a (lambda (b) (define c (lambda (d) d)) (c b))) (a 10)" = "\n10"  @>
+    test <@ execute "(define a (lambda (b) (define c (lambda (d) d)) (c b))) (a 10)" = "10"  @>

@@ -81,8 +81,8 @@ let execute text =
 
 // ** TODO **
 
+// - Variables within lambdas
 // - Add let
-// - varargs - different length arguments
 // - Check closures
 // - Implement core library in scheme
 // - Better way of handling evaluation errors (error as AST concept?)

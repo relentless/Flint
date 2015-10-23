@@ -7,10 +7,19 @@ let rec toString = function
     | String(s) -> sprintf "%A" s
     | Symbol(s) -> sprintf "%s" s
     | Boolean(b) -> sprintf "%s" (if b then "#t" else "#f")
-    | ExpList(expressions) -> sprintf "(%s)" (expressions |> expressionsToString " ")
-    | QuotedList(expressions) -> sprintf "'(%s)" (expressions |> expressionsToString " ")
-    | SeparateExpressions(expressions) -> sprintf "%s" (expressions |> expressionsToString "\n")
+    | ExpList(expressions) -> sprintf "(%s)" (expressions |> expressionsToString)
+    | QuotedList(expressions) -> sprintf "'(%s)" (expressions |> expressionsToString)
+    | SeparateExpressions(expressions) -> sprintf "%s" (expressions |> multipleExpressionsToString)
     | Lambda(l) -> sprintf "#<procedure:%s>" l
     | Nil -> ""
-and expressionsToString separator expressions =
-    expressions |> List.map toString |> String.concat separator
+and expressionsToString expressions =
+    expressions |> List.map toString |> String.concat " "
+and multipleExpressionsToString expressions =
+    expressions 
+    |> List.fold
+        (fun output exp -> 
+            let stringExpression = exp |> toString 
+            match output with 
+            | "" -> stringExpression
+            | _ -> output + "\n" + stringExpression)
+        ""
