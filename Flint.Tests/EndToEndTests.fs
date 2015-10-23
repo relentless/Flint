@@ -135,3 +135,7 @@ let ``Variable defined within a lambda works`` () =
 [<Test>]
 let ``Lambda defined within a lambda works`` () =
     test <@ execute "(define a (lambda (b) (define c (lambda (d) d)) (c b))) (a 10)" = "10"  @>
+
+[<Test>]
+let ``TODO: cond with single expression true`` () =
+    test <@ execute "(cond (#t 99))" = "99"  @>

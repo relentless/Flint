@@ -5,7 +5,7 @@ open CoreFunctions
 [<EntryPoint>]
 let main _ = 
 
-    printfn "Welcome to Flint, the F# Lisp Interpreter, v0.1.1"
+    printfn "Welcome to Flint, the F# Lisp Interpreter, v0.2.0"
 
     printfn "Type exit to quit\n"
 

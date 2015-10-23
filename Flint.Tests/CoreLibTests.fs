@@ -2,9 +2,7 @@
 
 open NUnit.Framework
 open Swensen.Unquote
-open Parser
 open Interpreter
-open Printer
 
 [<Test>]
 let ``not true`` () =
@@ -23,5 +21,13 @@ let ``and multiple args is false`` () =
     test <@ execute "(and #t #t #f #t)" = "#f"  @>
 
 [<Test>]
-let ``TODO: cond with single expression true`` () =
-    test <@ execute "(cond (#t 99))" = "99"  @>
+let ``null? true when null`` () =
+    test <@ execute "(null? '())" = "#t"  @>
+
+[<Test>]
+let ``null? false when non-empty list`` () =
+    test <@ execute "(null? '(1))" = "#f"  @>
+
+[<Test>]
+let ``null? false when primitive`` () =
+    test <@ execute "(null? 1)" = "#f"  @>

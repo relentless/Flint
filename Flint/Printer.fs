@@ -9,12 +9,12 @@ let rec toString = function
     | Boolean(b) -> sprintf "%s" (if b then "#t" else "#f")
     | ExpList(expressions) -> sprintf "(%s)" (expressions |> expressionsToString)
     | QuotedList(expressions) -> sprintf "'(%s)" (expressions |> expressionsToString)
-    | SeparateExpressions(expressions) -> sprintf "%s" (expressions |> multipleExpressionsToString)
+    | SeparateExpressions(expressions) -> sprintf "%s" (expressions |> separateExpressionsToString)
     | Lambda(l) -> sprintf "#<procedure:%s>" l
     | Nil -> ""
 and expressionsToString expressions =
     expressions |> List.map toString |> String.concat " "
-and multipleExpressionsToString expressions =
+and separateExpressionsToString expressions =
     expressions 
     |> List.fold
         (fun output exp -> 

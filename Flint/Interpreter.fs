@@ -15,30 +15,31 @@ let rec evaluate evaluationRecord =
 
     match evaluationRecord.Expression with
     | Symbol(symbolName) ->
-        if not (evaluationRecord.Environment |> Map.containsKey symbolName) then failwith (sprintf "Symbol '%s' not found." symbolName)
+        if not (evaluationRecord.Environment |> Map.containsKey symbolName) 
+        then failwith (sprintf "Symbol '%s' not found." symbolName)
         {evaluationRecord with Expression = evaluationRecord.Environment.[symbolName]}
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
         let caseToUse = selectCase evaluationRecord.Environment evaluationRecord.Functions condition trueCase falseCase
         evaluate {evaluationRecord with Expression = caseToUse}
-    | ExpList(Symbol("quote")::ExpList(expressions)::[]) -> {evaluationRecord with Expression = QuotedList(expressions)}
+    | ExpList(Symbol("quote")::ExpList(expressions)::[]) -> 
+        {evaluationRecord with Expression = QuotedList(expressions)}
     | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> 
         {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
-    | ExpList(Symbol("lambda")::Symbol(formals)::body) ->
-        let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
-        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaVarargsFunction evaluationRecord.Functions formals (MultipleExpressions(body)))}
-    | ExpList(Symbol("lambda")::ExpList(formals)::body) -> 
-        let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
-        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, createLambdaFunction evaluationRecord.Functions formals (MultipleExpressions(body)))}
+    | ExpList(Symbol("lambda")::formals::body) -> 
+        evaluationRecord |> createLambda formals body
     | ExpList(Lambda(lambdaName)::arguments) -> 
-        if not (evaluationRecord.Functions |> Map.containsKey lambdaName) then failwith (sprintf "Lambda '%s' not found." lambdaName)
+        if not (evaluationRecord.Functions |> Map.containsKey lambdaName) 
+        then failwith (sprintf "Lambda '%s' not found." lambdaName)
         {evaluationRecord with Expression = evaluationRecord.Functions.[lambdaName] arguments evaluationRecord.Environment}
-    | SeparateExpressions( expressions ) -> expressions |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
-    | MultipleExpressions( expressions ) -> expressions |> getLastExpression evaluationRecord.Environment evaluationRecord.Functions
+    | SeparateExpressions( expressions ) -> 
+        expressions |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
+    | MultipleExpressions( expressions ) -> 
+        expressions |> getLastExpression evaluationRecord.Environment evaluationRecord.Functions
     | ExpList(expressions) -> 
         expressions 
         |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions ExpList
         |> evaluate
-    | value -> evaluationRecord
+    | _ -> evaluationRecord
 
 and foldExpressionList environment functions expressionContainer expressions =
     expressions 
@@ -62,17 +63,21 @@ and selectCase environment functions condition trueCase falseCase =
         | Boolean(false) -> falseCase
         | _ -> failwith "invalid If case"
 
-and createLambdaFunction functions formals body =
+and createLambda formals body evaluationRecord =
+    let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
+    let evaluationFunction = createLambdaFunction formals evaluationRecord.Functions (MultipleExpressions(body))
+    {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, evaluationFunction)}
+
+and createLambdaFunction formals functions body =
     fun args env -> 
         let environmentWithArguments =
-            List.zip formals args
-            |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
+            match formals with
+            | Symbol(formalArgs) -> 
+                env.Add(formalArgs, QuotedList(args))
+            | ExpList(formalArgs) ->
+                List.zip formalArgs args
+                |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
         (evaluate {Expression = body; Environment = environmentWithArguments; Functions = functions}).Expression
-
-and createLambdaVarargsFunction functions formalsVarArg body =
-    fun args env -> 
-        let environmentWithArgumentsAsList = env.Add(formalsVarArg, QuotedList(args))
-        (evaluate {Expression = body; Environment = environmentWithArgumentsAsList; Functions = functions}).Expression
 
 let print expression = printfn "%s" (expression |> toString)
 
@@ -90,10 +95,14 @@ let execute text =
 
 // ** TODO **
 
+// - Add cond
 // - Add let
 // - Check closures
 // - Implement core library in scheme
+// - Add comments
 // - Better way of handling evaluation errors (error as AST concept?)
+// - Add Define syntax sugar
+// - Add VarArgs syntax sugar
 
 // ** To Try **
 

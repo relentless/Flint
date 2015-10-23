@@ -2,11 +2,14 @@
 	(lambda (statement) 
 		(eq? statement #f)))
 
+(define null?
+	(lambda (exp) (eq? exp '())))
+
 (define and 
 	(lambda expressions
 		(define internalAnd
 			(lambda (list)
-				(if (eq? list '())
+				(if (null? list)
 					#t
 					(if (eq? #t (car list))
 						(internalAnd (cdr list))
