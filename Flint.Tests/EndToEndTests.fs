@@ -105,8 +105,12 @@ let ``Multiple lambdas work`` () =
     test <@ execute "((lambda (y) (* y y)) ((lambda (x) (+ x x)) 5))"  = "100" @>
 
 [<Test>]
-let ``Varargs work in lambda`` () =
+let ``VarArgs turn the arguments into a Quoted List`` () =
     test <@ execute "((lambda args args) 1 2 3)"  = "'(1 2 3)" @>
+
+[<Test>]
+let ``VarArgs work in a lambda`` () =
+    test <@ execute "((lambda args (car args)) 1 2 3)"  = "1" @>
 
 [<Test>]
 let ``Quoted list results in quoted list`` () =
@@ -119,3 +123,11 @@ let ``Quotation shortcut operator results in same thing returned`` () =
 [<Test>]
 let ``Quote does not evaluate expression`` () =
     test <@ execute "(define x (lambda (y) (* y y))) '(x 3)" = "\n'(x 3)"  @>
+
+[<Test>]
+let ``Variable defined within a lambda works`` () =
+    test <@ execute "(define a (lambda (b) (define c 5) (+ c b))) (a 10)" = "15"  @>
+
+[<Test>]
+let ``Lambda defined within a lambda works`` () =
+    test <@ execute "(define a (lambda (b) (define c (lambda (d) d)) (c b))) (a 10)" = "\n10"  @>

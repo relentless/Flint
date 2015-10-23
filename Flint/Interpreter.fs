@@ -20,7 +20,7 @@ let rec evaluate evaluationRecord =
     | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
         let caseToUse = selectCase evaluationRecord.Environment evaluationRecord.Functions condition trueCase falseCase
         evaluate {evaluationRecord with Expression = caseToUse}
-    | ExpList(Symbol("quote")::rest) -> {evaluationRecord with Expression = QuotedList(rest)}
+    | ExpList(Symbol("quote")::ExpList(expressions)::[]) -> {evaluationRecord with Expression = QuotedList(expressions)}
     | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> 
         {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
     | ExpList(Symbol("lambda")::Symbol(formals)::body::[]) ->
@@ -62,7 +62,7 @@ and createLambdaFunction functions formals body =
 
 and createLambdaVarargsFunction functions formalsVarArg body =
     fun args env -> 
-        let environmentWithArgumentsAsList = env.Add(formalsVarArg, ExpList(args))
+        let environmentWithArgumentsAsList = env.Add(formalsVarArg, QuotedList(args))
         (evaluate {Expression = body; Environment = environmentWithArgumentsAsList; Functions = functions}).Expression
 
 let print expression = printfn "%s" (expression |> toString)

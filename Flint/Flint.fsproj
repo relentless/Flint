@@ -57,7 +57,7 @@
     <Content Include="packages.config" />
     <Content Include="app.config" />
     <Content Include="CoreLib.flint">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>

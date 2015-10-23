@@ -1,3 +1,14 @@
 (define not 
 	(lambda (statement) 
 		(eq? statement #f)))
+
+(define and 
+	(lambda expressions
+		(define internalAnd
+			(lambda (list)
+				(if (eq? list '())
+					#t
+					(if (eq? #t (car list))
+						(internalAnd (cdr list))
+						#f))))
+		(internalAnd expressions)))

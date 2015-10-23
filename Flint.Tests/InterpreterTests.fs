@@ -40,7 +40,6 @@ let ``Interpreting symbolic atom in environment evaluates to value in environmen
 let ``Interpreting separate expressions evaluates to separate expressions`` () =
     test <@ evalInitial <| SeparateExpressions( [Number(3); Number(4); Number(5)]) = SeparateExpressions( [Number(3); Number(4); Number(5)]) @>
 
-
 [<Test>]
 let ``Interpreting lambda adds a function to the function list`` () =
     let initialFunctionCount = initialFunctions.Count
@@ -57,5 +56,5 @@ let ``Interpreting Complex expression that evaluates to function works as first 
 
 [<Test>]
 let ``Interpreting an ExpList with a quote symbol gives a QuotedList`` () =
-    test <@ evalInitial <| ExpList([Symbol("quote"); Number(0)]) = QuotedList([Number(0)]) @>
+    test <@ evalInitial <| ExpList([Symbol("quote"); ExpList([Number(0)])]) = QuotedList([Number(0)]) @>
     

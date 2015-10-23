@@ -5,7 +5,7 @@ open SyntaxTree
 let rec toString = function
     | Number(n) -> sprintf "%i" n
     | String(s) -> sprintf "%A" s
-    | Symbol(s) -> sprintf ":%s" s
+    | Symbol(s) -> sprintf "%s" s
     | Boolean(b) -> sprintf "%s" (if b then "#t" else "#f")
     | ExpList(expressions) -> sprintf "(%s)" (expressions |> expressionsToString " ")
     | QuotedList(expressions) -> sprintf "'(%s)" (expressions |> expressionsToString " ")

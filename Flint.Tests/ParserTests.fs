@@ -21,7 +21,7 @@ let ``Parsing quoted list`` () =
 
 [<Test>]
 let ``Parsing quote operator list`` () =
-    test <@ parseFirst "'(1 2)" = ExpList( [Symbol("quote"); Number(1); Number(2)]) @>
+    test <@ parseFirst "'(1 2)" = ExpList( [Symbol("quote"); ExpList([Number(1); Number(2)])]) @>
 
 [<Test>]
 let ``Parsing define`` () =

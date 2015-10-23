@@ -26,8 +26,8 @@ let parseString = parse {
 }
 
 let parseNumber = many1Chars digit |>> (fun num -> Number(System.Int32.Parse num))
-let parseQuoted = chr '\'' >>. parseSingleExpression |>> fun (ExpList(items)) -> ExpList(Symbol("quote")::items)
 let parseList = chr '(' >>. sepBy parseSingleExpression spaces1 .>> chr ')' |>> ExpList
+let parseQuoted = chr '\'' >>. parseList |>> (fun expList -> ExpList(Symbol("quote")::[expList]))
 
 do parseSingleExpressionRef :=
     parseQuoted <|>
