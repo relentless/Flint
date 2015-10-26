@@ -44,6 +44,14 @@ let ``If false`` () =
     test <@ execute """(if #f "Hi Mum" "Hi Dad")""" = "\"Hi Dad\""  @>
 
 [<Test>]
+let ``If true works without false case`` () =
+    test <@ execute """(if #t "I speak the truth")""" = "\"I speak the truth\""  @>
+
+[<Test>]
+let ``If false without false case does nothing`` () =
+    test <@ execute """(if #f "I speak the truth")""" = ""  @>
+
+[<Test>]
 let ``Greater than numeric`` () =
     test <@ execute "(> 3 4)" = "#f"  @>
 
@@ -141,5 +149,9 @@ let ``Shortcut for defining a lambda works`` () =
     test <@ execute "(define (square x) (* x x)) (square 10)" = "100"  @>
 
 [<Test>]
-let ``TODO: cond with single expression true`` () =
+let ``cond with single expression true`` () =
     test <@ execute "(cond (#t 99))" = "99"  @>
+
+[<Test>]
+let ``TODO: cond uses else clause when others false`` () =
+    test <@ execute "(cond (#f 99) (else 3))" = "3"  @>

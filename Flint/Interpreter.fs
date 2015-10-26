@@ -15,12 +15,18 @@ let rec evaluate evaluationRecord =
 
     match evaluationRecord.Expression with
     | Symbol(symbolName) ->
-        if not (evaluationRecord.Environment |> Map.containsKey symbolName) 
-        then failwith (sprintf "Symbol '%s' not found." symbolName)
+        if not (evaluationRecord.Environment |> Map.containsKey symbolName) then 
+            failwith (sprintf "Symbol '%s' not found." symbolName)
         {evaluationRecord with Expression = evaluationRecord.Environment.[symbolName]}
+    | ExpList([Symbol("if");condition;trueCase]) -> 
+        let ifWithDummyFalseCase = ExpList([Symbol("if");condition;trueCase;Nil])
+        evaluate {evaluationRecord with Expression = ifWithDummyFalseCase}
     | ExpList([Symbol("if");condition;trueCase;falseCase]) -> 
         let caseToUse = selectCase evaluationRecord.Environment evaluationRecord.Functions condition trueCase falseCase
         evaluate {evaluationRecord with Expression = caseToUse}
+    | ExpList([Symbol("cond");ExpList([condition;result])]) -> 
+        let condAsIf = ExpList([Symbol("if");condition;result])
+        evaluate {evaluationRecord with Expression = condAsIf}
     | ExpList([Symbol("quote");ExpList(expressions)]) -> 
         {evaluationRecord with Expression = QuotedList(expressions)}
     | ExpList([Symbol("define");ExpList(Symbol(lambdaName)::lambdaFormals);expression]) -> 
@@ -33,17 +39,15 @@ let rec evaluate evaluationRecord =
         let evaluationFunction = createLambdaFunction formals evaluationRecord.Functions (MultipleExpressions(body))
         {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, evaluationFunction)}
     | ExpList(Lambda(lambdaName)::arguments) -> 
-        if not (evaluationRecord.Functions |> Map.containsKey lambdaName) 
-        then failwith (sprintf "Lambda '%s' not found." lambdaName)
+        if not (evaluationRecord.Functions |> Map.containsKey lambdaName) then 
+            failwith (sprintf "Lambda '%s' not found." lambdaName)
         {evaluationRecord with Expression = evaluationRecord.Functions.[lambdaName] arguments evaluationRecord.Environment}
     | SeparateExpressions( expressions ) -> 
         expressions |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
     | MultipleExpressions( expressions ) -> 
         expressions |> getLastExpression evaluationRecord.Environment evaluationRecord.Functions
     | ExpList(expressions) -> 
-        expressions 
-        |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions ExpList
-        |> evaluate
+        expressions |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions ExpList |> evaluate
     | _ -> evaluationRecord
 
 and foldExpressionList environment functions expressionContainer expressions =
