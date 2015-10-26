@@ -18,15 +18,20 @@ let rec evaluate evaluationRecord =
         if not (evaluationRecord.Environment |> Map.containsKey symbolName) 
         then failwith (sprintf "Symbol '%s' not found." symbolName)
         {evaluationRecord with Expression = evaluationRecord.Environment.[symbolName]}
-    | ExpList(Symbol("if")::condition::trueCase::falseCase::[]) -> 
+    | ExpList([Symbol("if");condition;trueCase;falseCase]) -> 
         let caseToUse = selectCase evaluationRecord.Environment evaluationRecord.Functions condition trueCase falseCase
         evaluate {evaluationRecord with Expression = caseToUse}
-    | ExpList(Symbol("quote")::ExpList(expressions)::[]) -> 
+    | ExpList([Symbol("quote");ExpList(expressions)]) -> 
         {evaluationRecord with Expression = QuotedList(expressions)}
-    | ExpList(Symbol("define")::Symbol(name)::expression::[]) -> 
+    | ExpList([Symbol("define");ExpList(Symbol(lambdaName)::lambdaFormals);expression]) -> 
+        let longhandLambda = ExpList([Symbol("define");Symbol(lambdaName);ExpList([Symbol("lambda");ExpList(lambdaFormals);expression])])
+        evaluate {evaluationRecord with Expression = longhandLambda }
+    | ExpList([Symbol("define");Symbol(name);expression]) -> 
         {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
     | ExpList(Symbol("lambda")::formals::body) -> 
-        evaluationRecord |> createLambda formals body
+        let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
+        let evaluationFunction = createLambdaFunction formals evaluationRecord.Functions (MultipleExpressions(body))
+        {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, evaluationFunction)}
     | ExpList(Lambda(lambdaName)::arguments) -> 
         if not (evaluationRecord.Functions |> Map.containsKey lambdaName) 
         then failwith (sprintf "Lambda '%s' not found." lambdaName)
@@ -63,17 +68,11 @@ and selectCase environment functions condition trueCase falseCase =
         | Boolean(false) -> falseCase
         | _ -> failwith "invalid If case"
 
-and createLambda formals body evaluationRecord =
-    let lambdaId = "lambda-" + System.Guid.NewGuid().ToString()
-    let evaluationFunction = createLambdaFunction formals evaluationRecord.Functions (MultipleExpressions(body))
-    {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, evaluationFunction)}
-
 and createLambdaFunction formals functions body =
     fun args env -> 
         let environmentWithArguments =
             match formals with
-            | Symbol(formalArgs) -> 
-                env.Add(formalArgs, QuotedList(args))
+            | Symbol(formalArgs) -> env.Add(formalArgs, QuotedList(args))
             | ExpList(formalArgs) ->
                 List.zip formalArgs args
                 |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
@@ -101,8 +100,7 @@ let execute text =
 // - Implement core library in scheme
 // - Add comments
 // - Better way of handling evaluation errors (error as AST concept?)
-// - Add Define syntax sugar
-// - Add VarArgs syntax sugar
+// - Add VarArgs syntax sugar for Define
 
 // ** To Try **
 
