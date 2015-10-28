@@ -108,6 +108,8 @@ let execute text =
 
 // ** To Try **
 
+// - separate parse tree
+// - separate evaluation stages
 // - Eager vs Lazy evaluation
 // - types
 // - Minimal primitives
