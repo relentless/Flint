@@ -153,9 +153,21 @@ let ``cond with single expression true`` () =
     test <@ execute "(cond (#t 99))" = "99"  @>
 
 [<Test>]
-let ``TODO: cond with later expression true`` () =
+let ``cond with later expression true`` () =
     test <@ execute "(cond (#f 99) (#f 99) (#t 1))" = "1"  @>
 
 [<Test>]
-let ``TODO: cond uses else clause when others false`` () =
+let ``cond uses else clause when others false`` () =
     test <@ execute "(cond (#f 99) (else 3))" = "3"  @>
+
+[<Test>]
+let ``cond with else not last causes error`` () =
+    try
+        execute "(cond (#f 1) (else 2) (#t 3))" |> ignore
+        failwith "Test didn't fail in expected way"
+    with
+        | :? System.Exception as evaluationException -> test <@ evaluationException.Message = "Invalid 'cond' statement - 'else' expression must be last" @>
+
+[<Test>]
+let ``TODO: single let assignment works`` () =
+    test <@ execute "(let ((x 10)) (+ x 3))" = "13"  @>

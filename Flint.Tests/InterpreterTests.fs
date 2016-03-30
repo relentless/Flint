@@ -59,9 +59,15 @@ let ``Interpreting an ExpList with a quote symbol gives a QuotedList`` () =
     test <@ evalInitial <| ExpList([Symbol("quote"); ExpList([Number(0)])]) = QuotedList([Number(0)]) @>
     
 [<Test>]
-let ``TEMP: Interpreting cond with single expression true`` () =
-    test <@ condToIf <| ExpList([Symbol("cond"); ExpList([Boolean(true);Number(1)])]) = ExpList([Symbol("if");Boolean(true);Number(1)])  @>
+let ``Interpreting cond with single expression true`` () =
+    test <@ evalInitial <| ExpList([Symbol("cond"); ExpList([Boolean(true);Number(1)])]) = Number(1) @>
 
 [<Test>]
-let ``TEMP: Interpreting cond with later expression true`` () =
-    test <@ condToIf <| ExpList([Symbol("cond"); ExpList([Boolean(false);Number(1)]); ExpList([Boolean(false);Number(2)]); ExpList([Boolean(true);Number(3)])]) = ExpList([Symbol("if");Boolean(true);Number(1)])  @>
+let ``Interpreting cond with later expression true`` () =
+    let conditionalTree = ExpList([Symbol("cond"); ExpList([Boolean(false);Number(1)]); ExpList([Boolean(false);Number(2)]); ExpList([Boolean(true);Number(3)])])
+    test <@ evalInitial <| conditionalTree = Number(3)  @>
+
+[<Test>]
+let ``Interpreting cond uses else if nothing else true`` () =
+    let conditionalTree = ExpList([Symbol("cond"); ExpList([Boolean(false);Number(1)]); ExpList([Boolean(false);Number(2)]); ExpList([Symbol("else");Number(3)])])
+    test <@ evalInitial <| conditionalTree = Number(3)  @>

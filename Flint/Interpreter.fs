@@ -27,7 +27,8 @@ let rec evaluate evaluationRecord =
     | ExpList([Symbol("cond");ExpList([condition;result])]) -> 
         let condAsIf = ExpList([Symbol("if");condition;result])
         evaluate {evaluationRecord with Expression = condAsIf}
-    //| ExpList([Symbol("else");value]) -> {evaluationRecord with Expression = value}
+    | ExpList(Symbol("cond")::parts) -> 
+        evaluate {evaluationRecord with Expression = condToIf(parts)}
     | ExpList([Symbol("quote");ExpList(expressions)]) -> 
         {evaluationRecord with Expression = QuotedList(expressions)}
     | ExpList([Symbol("define");ExpList(Symbol(lambdaName)::lambdaFormals);expression]) -> 
@@ -83,6 +84,13 @@ and createLambdaFunction formals functions body =
                 |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
         (evaluate {Expression = body; Environment = environmentWithArguments; Functions = functions}).Expression
 
+and condToIf = function
+    | ExpList([Symbol("else");value])::[] -> ExpList([Symbol("if");Boolean(true);value])
+    | ExpList([Symbol("else");value])::somethingElse -> failwith "Invalid 'cond' statement - 'else' expression must be last"
+    | ExpList([cond;value])::[] -> ExpList([Symbol("if");cond;value])
+    | ExpList([cond;value])::rest -> ExpList([Symbol("if");cond;value;condToIf(rest)])
+    | [] -> failwith "Error evaluating Cond statement"
+
 let print expression = printfn "%s" (expression |> toString)
 
 let loadCoreLib() =
@@ -97,36 +105,37 @@ let execute text =
     |> result
     |> toString 
 
-let condToIf expression =
-    let rec ctif = function
-    | ExpList([cond;value])::rest -> ExpList([Symbol("if");cond;value;ctif(rest)])
-    | [] -> Number(-999)
 
-    match expression with 
-    | ExpList(Symbol("cond")::parts) -> 
-        ctif(parts)
+// Let implemented as lambda:
 
-// (cond (#f 1) (#f 2) (#t 3))
+// (let ((x 10))
+//  (+ x 3))
+// => 13
 
-// (if #f 1 (if #f 2 (if #t 3)))
-    
+//((lambda (x)
+//   (+ x 3))
+// 10)
+//=> 13
+
 
 // ** TODO **
 
-// - Add cond
 // - Add let
 // - Check closures
 // - Implement core library in scheme
 // - Add comments
 // - Better way of handling evaluation errors (error as AST concept?)
 // - Add VarArgs syntax sugar for Define
+// - Try active pattern matching in interpreter
+// - Split interpreter into separate step for transformations and evaluation? (e.g. cond -> if, then evaluate if)
 
 // ** To Try **
 
-// - separate parse tree
-// - separate evaluation stages
+
+// - Separate parse tree
+// - Separate evaluation stages
 // - Eager vs Lazy evaluation
-// - types
+// - Typed Scheme
 // - Minimal primitives
 // - Write parser by hand
 // - Code Golf version
