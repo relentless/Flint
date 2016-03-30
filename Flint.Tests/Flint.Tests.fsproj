@@ -52,10 +52,11 @@
     <Compile Include="ParserTests.fs" />
     <Content Include="packages.config" />
     <Content Include="app.config" />
-    <Compile Include="InterpreterTests.fs" />
+    <Compile Include="EvaluatorTests.fs" />
     <Compile Include="EndToEndTests.fs" />
     <Compile Include="PrinterTests.fs" />
     <Compile Include="CoreLibTests.fs" />
+    <Compile Include="ExpanderTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

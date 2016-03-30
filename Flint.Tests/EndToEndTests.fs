@@ -2,10 +2,7 @@
 
 open NUnit.Framework
 open Swensen.Unquote
-open Parser
-open Interpreter
-open Printer
-open SyntaxTree
+open Integrator
 
 [<Test>]
 let ``Addition`` () =
@@ -66,11 +63,6 @@ let ``Equal numeric`` () =
 [<Test>]
 let ``Multiple levels of expression get evaluated`` () =
     test <@ execute """(if (< (+ 3 4) (- 4 3)) "never happen" (+ (+ (/ 20 2) (* 2 3)) (- (+ 2 2) (- 4 1))))""" = "17"  @>
-
-[<Test>]
-let ``Define adds value to environment`` () =
-    let evaluated = "(define x 10)" |> parse |> integrate CoreFunctions.initialEnvironment CoreFunctions.initialFunctions |> evaluate
-    test <@ evaluated.Environment.["x"] = Number(10) @>
 
 [<Test>]
 let ``Built-in procedures evaluate to a Procedure`` () =

@@ -40,6 +40,7 @@ do parseSingleExpressionRef :=
     
 do parseExpressionRef := sepBy parseSingleExpression spaces1 |>> SeparateExpressions
 
+// converts text into an Expression
 let parse text =
     match run parseExpression text with
     | Success(result,_,_) -> result

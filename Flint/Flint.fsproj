@@ -53,7 +53,9 @@
     <Compile Include="Parser.fs" />
     <Compile Include="Printer.fs" />
     <Compile Include="CoreFunctions.fs" />
-    <Compile Include="Interpreter.fs" />
+    <Compile Include="Expander.fs" />
+    <Compile Include="Evaluator.fs" />
+    <Compile Include="Integrator.fs" />
     <Content Include="packages.config" />
     <Content Include="app.config" />
     <Content Include="CoreLib.flint">

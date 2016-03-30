@@ -1,11 +1,9 @@
-﻿open Parser
-open Interpreter
-open CoreFunctions
+﻿open Integrator
 
 [<EntryPoint>]
 let main _ = 
 
-    printfn "Welcome to Flint, the F# Lisp Interpreter, v0.2.0"
+    printfn "Welcome to Flint, the F# Lisp Interpreter, v0.3.0"
 
     printfn "Type exit to quit\n"
 
@@ -14,7 +12,7 @@ let main _ =
         match System.Console.ReadLine() with
         | "exit" | "Exit" -> ()
         | input -> 
-            let evaluated = {evaluationRecord with Expression = input |> parse} |> evaluate
+            let evaluated = evaluationRecord |> process input
             print evaluated.Expression
             inputLoop evaluated
 

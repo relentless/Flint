@@ -2,7 +2,7 @@
 
 open NUnit.Framework
 open Swensen.Unquote
-open Interpreter
+open Integrator
 
 [<Test>]
 let ``not true`` () =

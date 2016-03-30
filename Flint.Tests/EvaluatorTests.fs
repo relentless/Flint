@@ -3,14 +3,9 @@
 open NUnit.Framework
 open Swensen.Unquote
 open SyntaxTree
-open Interpreter
+open Evaluator
+open Integrator
 open CoreFunctions
-
-let evalInitial expression = 
-    expression
-    |> integrate initialEnvironment initialFunctions 
-    |> evaluate 
-    |> result
 
 [<Test>]
 let ``Intrepreting numeric atom evaluates to itself`` () =
@@ -71,3 +66,9 @@ let ``Interpreting cond with later expression true`` () =
 let ``Interpreting cond uses else if nothing else true`` () =
     let conditionalTree = ExpList([Symbol("cond"); ExpList([Boolean(false);Number(1)]); ExpList([Boolean(false);Number(2)]); ExpList([Symbol("else");Number(3)])])
     test <@ evalInitial <| conditionalTree = Number(3)  @>
+
+[<Test>]
+let ``Interpreting define adds value to environment`` () =
+    let defineTree = ExpList([Symbol("define");Symbol("x");Number(10)])
+    let evaluated = defineTree |> integrate CoreFunctions.initialEnvironment CoreFunctions.initialFunctions |> evaluate
+    test <@ evaluated.Environment.["x"] = Number(10) @>

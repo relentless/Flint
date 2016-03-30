@@ -1,39 +1,18 @@
-﻿module Interpreter
+﻿module Evaluator
 
-open Parser
 open SyntaxTree
-open Printer
 open CoreFunctions
-open System.IO
 
-let integrate environment functions expression =
-    {Expression = expression; Environment = environment; Functions = functions }
-
-let result evaluationRecord = evaluationRecord.Expression
-
+// Evaluates an expression in the context of an environment
 let rec evaluate evaluationRecord =
 
     match evaluationRecord.Expression with
     | Symbol(symbolName) ->
-        if not (evaluationRecord.Environment |> Map.containsKey symbolName) then 
-            failwith (sprintf "Symbol '%s' not found." symbolName)
+        if not (evaluationRecord.Environment |> Map.containsKey symbolName) then failwith (sprintf "Symbol '%s' not found." symbolName)
         {evaluationRecord with Expression = evaluationRecord.Environment.[symbolName]}
-    | ExpList([Symbol("if");condition;trueCase]) -> 
-        let ifWithDummyFalseCase = ExpList([Symbol("if");condition;trueCase;Nil])
-        evaluate {evaluationRecord with Expression = ifWithDummyFalseCase}
     | ExpList([Symbol("if");condition;trueCase;falseCase]) -> 
         let caseToUse = selectCase evaluationRecord.Environment evaluationRecord.Functions condition trueCase falseCase
         evaluate {evaluationRecord with Expression = caseToUse}
-    | ExpList([Symbol("cond");ExpList([condition;result])]) -> 
-        let condAsIf = ExpList([Symbol("if");condition;result])
-        evaluate {evaluationRecord with Expression = condAsIf}
-    | ExpList(Symbol("cond")::parts) -> 
-        evaluate {evaluationRecord with Expression = condToIf(parts)}
-    | ExpList([Symbol("quote");ExpList(expressions)]) -> 
-        {evaluationRecord with Expression = QuotedList(expressions)}
-    | ExpList([Symbol("define");ExpList(Symbol(lambdaName)::lambdaFormals);expression]) -> 
-        let longhandLambda = ExpList([Symbol("define");Symbol(lambdaName);ExpList([Symbol("lambda");ExpList(lambdaFormals);expression])])
-        evaluate {evaluationRecord with Expression = longhandLambda }
     | ExpList([Symbol("define");Symbol(name);expression]) -> 
         {evaluationRecord with Expression = Nil; Environment = evaluationRecord.Environment.Add(name, expression) }
     | ExpList(Symbol("lambda")::formals::body) -> 
@@ -41,18 +20,18 @@ let rec evaluate evaluationRecord =
         let evaluationFunction = createLambdaFunction formals evaluationRecord.Functions (MultipleExpressions(body))
         {evaluationRecord with Expression = Lambda(lambdaId); Functions = evaluationRecord.Functions.Add(lambdaId, evaluationFunction)}
     | ExpList(Lambda(lambdaName)::arguments) -> 
-        if not (evaluationRecord.Functions |> Map.containsKey lambdaName) then 
-            failwith (sprintf "Lambda '%s' not found." lambdaName)
+        if not (evaluationRecord.Functions |> Map.containsKey lambdaName) then failwith (sprintf "Lambda '%s' not found." lambdaName)
         {evaluationRecord with Expression = evaluationRecord.Functions.[lambdaName] arguments evaluationRecord.Environment}
     | SeparateExpressions( expressions ) -> 
-        expressions |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
+        expressions |> evaluateExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
     | MultipleExpressions( expressions ) -> 
         expressions |> getLastExpression evaluationRecord.Environment evaluationRecord.Functions
     | ExpList(expressions) -> 
-        expressions |> foldExpressionList evaluationRecord.Environment evaluationRecord.Functions ExpList |> evaluate
+        expressions |> evaluateExpressionList evaluationRecord.Environment evaluationRecord.Functions ExpList |> evaluate
     | _ -> evaluationRecord
 
-and foldExpressionList environment functions expressionContainer expressions =
+// evaluates each expression in a list and returns them in the provided container
+and evaluateExpressionList environment functions expressionContainer expressions =
     expressions 
     |> List.fold (fun (environment,functions,expressions) expression -> 
         let newRecord = evaluate {Expression = expression; Environment = environment; Functions = functions }
@@ -60,6 +39,7 @@ and foldExpressionList environment functions expressionContainer expressions =
         (environment,functions,[])
     |> (fun (env, func, expressions) -> {Expression = expressionContainer expressions; Environment = env; Functions = func} )
 
+// evaluates each expression in a list but returns only the last one
 and getLastExpression environment functions expressions =
     expressions 
     |> List.fold (fun (environment,functions,expressions) expression -> 
@@ -83,39 +63,6 @@ and createLambdaFunction formals functions body =
                 List.zip formalArgs args
                 |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
         (evaluate {Expression = body; Environment = environmentWithArguments; Functions = functions}).Expression
-
-and condToIf = function
-    | ExpList([Symbol("else");value])::[] -> ExpList([Symbol("if");Boolean(true);value])
-    | ExpList([Symbol("else");value])::somethingElse -> failwith "Invalid 'cond' statement - 'else' expression must be last"
-    | ExpList([cond;value])::[] -> ExpList([Symbol("if");cond;value])
-    | ExpList([cond;value])::rest -> ExpList([Symbol("if");cond;value;condToIf(rest)])
-    | [] -> failwith "Error evaluating Cond statement"
-
-let print expression = printfn "%s" (expression |> toString)
-
-let loadCoreLib() =
-    File.ReadAllText("CoreLib.flint")
-    |> parse
-    |> integrate initialEnvironment initialFunctions
-    |> evaluate
-
-let execute text =
-    {loadCoreLib() with Expression = text |> parse}
-    |> evaluate 
-    |> result
-    |> toString 
-
-
-// Let implemented as lambda:
-
-// (let ((x 10))
-//  (+ x 3))
-// => 13
-
-//((lambda (x)
-//   (+ x 3))
-// 10)
-//=> 13
 
 
 // ** TODO **
