@@ -153,5 +153,9 @@ let ``cond with single expression true`` () =
     test <@ execute "(cond (#t 99))" = "99"  @>
 
 [<Test>]
+let ``TODO: cond with later expression true`` () =
+    test <@ execute "(cond (#f 99) (#f 99) (#t 1))" = "1"  @>
+
+[<Test>]
 let ``TODO: cond uses else clause when others false`` () =
     test <@ execute "(cond (#f 99) (else 3))" = "3"  @>

@@ -27,6 +27,7 @@ let rec evaluate evaluationRecord =
     | ExpList([Symbol("cond");ExpList([condition;result])]) -> 
         let condAsIf = ExpList([Symbol("if");condition;result])
         evaluate {evaluationRecord with Expression = condAsIf}
+    //| ExpList([Symbol("else");value]) -> {evaluationRecord with Expression = value}
     | ExpList([Symbol("quote");ExpList(expressions)]) -> 
         {evaluationRecord with Expression = QuotedList(expressions)}
     | ExpList([Symbol("define");ExpList(Symbol(lambdaName)::lambdaFormals);expression]) -> 
@@ -95,6 +96,20 @@ let execute text =
     |> evaluate 
     |> result
     |> toString 
+
+let condToIf expression =
+    let rec ctif = function
+    | ExpList([cond;value])::rest -> ExpList([Symbol("if");cond;value;ctif(rest)])
+    | [] -> Number(-999)
+
+    match expression with 
+    | ExpList(Symbol("cond")::parts) -> 
+        ctif(parts)
+
+// (cond (#f 1) (#f 2) (#t 3))
+
+// (if #f 1 (if #f 2 (if #t 3)))
+    
 
 // ** TODO **
 
