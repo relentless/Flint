@@ -161,5 +161,9 @@ let ``cond with else not last causes error`` () =
         | :? System.Exception as evaluationException -> test <@ evaluationException.Message = "Invalid 'cond' statement - 'else' expression must be last" @>
 
 [<Test>]
-let ``TODO: single let assignment works`` () =
+let ``single let assignment works`` () =
     test <@ execute "(let ((x 10)) (+ x 3))" = "13"  @>
+
+[<Test>]
+let ``TODO: multiple let assignment works`` () =
+    test <@ execute "(let ((x 10)(y 5)) (+ x y))" = "15"  @>

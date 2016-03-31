@@ -10,6 +10,7 @@ let rec expand = function
     | ExpList([Symbol("define");ExpList(Symbol(lambdaName)::lambdaFormals);expression]) -> 
         let longhandLambda = ExpList([Symbol("define");Symbol(lambdaName);ExpList([Symbol("lambda");ExpList(lambdaFormals);expression])])
         longhandLambda |> expand
+    | ExpList([Symbol("let");ExpList(assignments); expressionsUsingValues]) -> letToLambda assignments expressionsUsingValues
     | SeparateExpressions(expressions) -> expressions |> expandExpressionList SeparateExpressions
     | MultipleExpressions(expressions) -> expressions |> expandExpressionList MultipleExpressions
     | ExpList(expressions) -> expressions |> expandExpressionList ExpList
@@ -22,6 +23,10 @@ and condToIf = function
     | ExpList([cond;value])::rest -> ExpList([Symbol("if");cond;value;condToIf(rest)])
     | [] -> failwith "Error expanding 'cond' statement"
 
+and letToLambda assignments expressionsUsingValues =
+    match assignments with
+    | ExpList([label;value])::[] -> ExpList([ExpList([Symbol("lambda"); ExpList([label]); expressionsUsingValues]); value])
+
 and expandExpressionList expressionContainer expressions =
     expressions 
     |> List.fold (fun expandedExpressions expression -> expandedExpressions@[expand expression]) []
@@ -32,9 +37,6 @@ and expandExpressionList expressionContainer expressions =
 // (let ((x 10))
 //  (+ x 3))
 
-// => 13
-
 //((lambda (x)
 //   (+ x 3))
 // 10)
-//=> 13
