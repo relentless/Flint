@@ -165,5 +165,9 @@ let ``single let assignment works`` () =
     test <@ execute "(let ((x 10)) (+ x 3))" = "13"  @>
 
 [<Test>]
-let ``TODO: multiple let assignment works`` () =
+let ``multiple let assignment works`` () =
+    test <@ execute "(let ((x 10) (y 5)) (+ x y))" = "15"  @>
+
+[<Test>]
+let ``TODO: fix parser problem with space between lists`` () =
     test <@ execute "(let ((x 10)(y 5)) (+ x y))" = "15"  @>

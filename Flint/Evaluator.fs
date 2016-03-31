@@ -67,8 +67,7 @@ and createLambdaFunction formals functions body =
 
 // ** TODO **
 
-// - Add let
-// - Check closures
+// - Fix parser (space between lists)
 // - Implement core library in scheme
 // - Add comments
 // - Better way of handling evaluation errors (error as AST concept?)

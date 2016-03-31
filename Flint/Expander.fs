@@ -25,18 +25,10 @@ and condToIf = function
 
 and letToLambda assignments expressionsUsingValues =
     match assignments with
-    | ExpList([label;value])::[] -> ExpList([ExpList([Symbol("lambda"); ExpList([label]); expressionsUsingValues]); value])
+    | ExpList([label;value])::furtherAssignments -> ExpList([ExpList([Symbol("lambda"); ExpList([label]); letToLambda furtherAssignments expressionsUsingValues]); value])
+    | [] -> expressionsUsingValues
 
 and expandExpressionList expressionContainer expressions =
     expressions 
     |> List.fold (fun expandedExpressions expression -> expandedExpressions@[expand expression]) []
     |> (fun expressions -> expressionContainer expressions)
-
-// Let implemented as lambda:
-
-// (let ((x 10))
-//  (+ x 3))
-
-//((lambda (x)
-//   (+ x 3))
-// 10)
