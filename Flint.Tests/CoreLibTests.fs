@@ -4,6 +4,14 @@ open NUnit.Framework
 open Swensen.Unquote
 open Integrator
 
+// see http://www.schemers.org/Documents/Standards/R5RS/HTML/, section 6
+
+[<Test>]
+let ``eqv booleans`` () =
+    test <@ execute "(eqv? #t #t)" = "#t"  @>
+    test <@ execute "(eqv? #f #f)" = "#t"  @>
+    test <@ execute "(eqv? #f #t)" = "#f"  @>
+
 [<Test>]
 let ``not true`` () =
     test <@ execute "(not #t)" = "#f"  @>
