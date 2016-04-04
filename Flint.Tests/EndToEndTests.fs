@@ -168,3 +168,11 @@ let ``single let assignment works`` () =
 let ``multiple let assignment works`` () =
     test <@ execute "(let ((x 10) (y 5)) (+ x y))" = "15"  @>
 
+[<Test>]
+let ``Comments are ignored`` () =
+    test <@ execute """
+    ; here's a comment
+    (+ 
+    7 ; hi mum
+    8 
+    9)""" = "24"  @>

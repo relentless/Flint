@@ -36,5 +36,23 @@ let ``Parsing lambda`` () =
     test <@ parseFirst "(lambda (x) (+ x x))" = ExpList([Symbol("lambda"); ExpList([Symbol("x")]); ExpList([Symbol("+"); Symbol("x"); Symbol("x")])]) @>
 
 [<Test>]
-let ``lists don't need a space between them`` () =
+let ``TO FIX: lists don't need a space between them`` () =
     test <@ parseFirst "(+ (+ 1 1)(+ 2 2))" = ExpList([Symbol("+");ExpList([Symbol("+");Number(1);Number(1)]);ExpList([Symbol("+");Number(2);Number(2)])])  @>
+
+[<Test>]
+let ``Parsing all valid extended alphanumeric characters work in a symbol name`` () =
+    test <@ parseFirst "(define abc!$%&*+-./:<=>?@^_~ 123)" = ExpList( [Symbol("define"); Symbol("abc!$%&*+-./:<=>?@^_~"); Number(123)])  @>
+
+[<Test>]
+let ``Parsing open paren with spaces after`` () =
+    test <@ parseFirst "( + 1 2)" = ExpList( [Symbol("+"); Number(1); Number(2)])  @>
+
+[<Test>]
+let ``TO FIX: Parsing close paren with spaces before`` () =
+    test <@ parseFirst "(+ 1 2 )" = ExpList( [Symbol("+"); Number(1); Number(2)])  @>
+
+[<Test>]
+let ``Parsing multi-line statements`` () =
+    test <@ parseFirst """(+ 
+    1 
+    2)""" = ExpList( [Symbol("+"); Number(1); Number(2)])  @>
