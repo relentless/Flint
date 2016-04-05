@@ -173,6 +173,5 @@ let ``Comments are ignored`` () =
     test <@ execute """
     ; here's a comment
     (+ 
-    7 ; hi mum
-    8 
-    9)""" = "24"  @>
+    1 ; hi mum
+    2)""" = "3"  @>

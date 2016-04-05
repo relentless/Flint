@@ -9,11 +9,12 @@ let parseSingleExpression, parseSingleExpressionRef = createParserForwardedToRef
 let chr c = skipChar c
 let symbol = anyOf "!$%&*+-./:<=>?@^_~" // As per http://www.schemers.org/Documents/Standards/R5RS/HTML/, Section 2.1
 
-/// Read a line comment.
-//let lineComment = pchar ';' >>. restOfLine true
+let whitespaceCharacter = anyOf [' '; '\r'; '\n'; '\t'] |>> fun chr -> string chr
+let lineComment = pchar ';' >>. restOfLine true
 
-/// Skip any white space characters.
-//let skipWhitespace = spaces <|> lineComment
+let whitespace = lineComment <|> whitespaceCharacter
+let skipWhitespace = skipMany whitespace
+let skipWhitespace1 = skipMany1 whitespace
 
 let parseTrue = pstring "#t" |>> (fun _ -> Boolean(true))
 let parseFalse = pstring "#f" |>> (fun _ -> Boolean(false))
@@ -32,7 +33,7 @@ let parseString = parse {
 }
 
 let parseNumber = many1Chars digit |>> (fun num -> Number(System.Int32.Parse num))
-let parseList = chr '(' >>. spaces >>. sepBy parseSingleExpression spaces1 .>> chr ')' |>> ExpList
+let parseList = chr '(' >>. skipWhitespace >>. sepBy parseSingleExpression skipWhitespace1 .>> chr ')' |>> ExpList
 let parseQuoted = chr '\'' >>. parseList |>> (fun expList -> ExpList(Symbol("quote")::[expList]))
 
 do parseSingleExpressionRef :=
@@ -44,7 +45,7 @@ do parseSingleExpressionRef :=
     parseString <|> 
     parseNumber
     
-do parseExpressionRef := sepBy parseSingleExpression spaces1 |>> SeparateExpressions
+do parseExpressionRef := skipWhitespace >>. sepBy parseSingleExpression skipWhitespace1 |>> SeparateExpressions
 
 // converts text into an Expression
 let parse text =

@@ -56,3 +56,36 @@ let ``Parsing multi-line statements`` () =
     test <@ parseFirst """(+ 
     1 
     2)""" = ExpList( [Symbol("+"); Number(1); Number(2)])  @>
+
+[<Test>]
+let ``Parsing expressions with a newline before`` () =
+    test <@ parseFirst """
+    (+ 
+    1
+    2)""" = ExpList( [Symbol("+"); Number(1); Number(2)])  @>
+
+[<Test>]
+let ``Parsing expressions with spaces before`` () =
+    test <@ parseFirst """   (+ 1 2)""" = ExpList( [Symbol("+"); Number(1); Number(2)])  @>
+
+[<Test>]
+let ``Parsing single-line comments on the same line as code`` () =
+    test <@ parseFirst """(+ 
+    1 ; hi mum
+    2)""" = ExpList( [Symbol("+"); Number(1); Number(2)])  @>
+
+[<Test>]
+let ``Parsing single-line comments in the middle of a list`` () =
+    test <@ parseFirst """(+ 
+    1
+    ; hi mum
+    2)""" = ExpList( [Symbol("+"); Number(1); Number(2)])  @>
+
+[<Test>]
+let ``Parsing single-line comments before a list`` () =
+    test <@ parseFirst """
+    ; some code:
+    (+ 
+    1
+    ; hi mum
+    2)""" = ExpList( [Symbol("+"); Number(1); Number(2)])  @>
