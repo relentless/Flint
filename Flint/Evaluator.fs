@@ -68,12 +68,13 @@ and createLambdaFunction formals functions body =
 // ** TODO **
 
 // - Fix parser (space between lists)
+// - Add other notations (backquote character etc) - See Section 2.3 of http://www.schemers.org/Documents/Standards/R5RS/HTML/
 // - Implement core library in scheme
-// - Add comments
 // - Better way of handling evaluation errors (error as AST concept?)
 // - Add VarArgs syntax sugar for Define
 // - Try active pattern matching in interpreter
 // - Split interpreter into separate step for transformations and evaluation? (e.g. cond -> if, then evaluate if)
+// - Implement tail recursion
 
 // ** To Try **
 
