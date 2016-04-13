@@ -57,6 +57,7 @@
     <Compile Include="PrinterTests.fs" />
     <Compile Include="CoreLibTests.fs" />
     <Compile Include="ExpanderTests.fs" />
+    <Compile Include="CoreFunctionTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

@@ -175,3 +175,12 @@ let ``Comments are ignored`` () =
     (+ 
     1 ; hi mum
     2)""" = "3"  @>
+
+[<Test>]
+let ``type checking predicates work for complex expressions`` () =
+    test <@ execute "(boolean? (car (cdr '(1 #f 3))))" = "#t"  @>
+
+[<Test>]
+let ``TO FIX: non-functions applied to arguments hang`` () =
+    //test <@ execute "(1 #f 3)" = "#t"  @>
+    1

@@ -24,6 +24,8 @@ let initialEnvironment =
         .Add("<", Lambda("<"))
         .Add("=", Lambda("="))
         .Add("eq?", Lambda("eq?"))
+        .Add("boolean?", Lambda("boolean?"))
+        .Add("number?", Lambda("number?"))
 
 let (initialFunctions:FunctionDictionary) =
     Map.empty
@@ -38,3 +40,5 @@ let (initialFunctions:FunctionDictionary) =
         .Add("<", fun args env -> match args with [Number(arg1);Number(arg2)] -> Boolean(arg1 < arg2))
         .Add("=", fun args env -> match args with [Number(arg1);Number(arg2)] -> Boolean(arg1 = arg2))
         .Add("eq?", fun args env -> match args with [arg1;arg2] -> Boolean(arg1 = arg2))
+        .Add("boolean?", fun args env -> match args with | [Boolean(x)] -> Boolean(true) | _ -> Boolean(false))
+        .Add("number?", fun args env -> match args with | [Number(x)] -> Boolean(true) | _ -> Boolean(false))
