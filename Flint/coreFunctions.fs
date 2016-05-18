@@ -26,6 +26,7 @@ let initialEnvironment =
         .Add("eq?", Lambda("eq?"))
         .Add("boolean?", Lambda("boolean?"))
         .Add("number?", Lambda("number?"))
+        .Add("string?", Lambda("string?"))
 
 let (initialFunctions:FunctionDictionary) =
     Map.empty
@@ -42,3 +43,4 @@ let (initialFunctions:FunctionDictionary) =
         .Add("eq?", fun args env -> match args with [arg1;arg2] -> Boolean(arg1 = arg2))
         .Add("boolean?", fun args env -> match args with | [Boolean(x)] -> Boolean(true) | _ -> Boolean(false))
         .Add("number?", fun args env -> match args with | [Number(x)] -> Boolean(true) | _ -> Boolean(false))
+        .Add("string?", fun args env -> match args with | [String(x)] -> Boolean(true) | _ -> Boolean(false))

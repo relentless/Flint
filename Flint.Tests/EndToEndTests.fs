@@ -181,6 +181,9 @@ let ``type checking predicates work for complex expressions`` () =
     test <@ execute "(boolean? (car (cdr '(1 #f 3))))" = "#t"  @>
 
 [<Test>]
-let ``TO FIX: non-functions applied to arguments hang`` () =
-    //test <@ execute "(1 #f 3)" = "#t"  @>
-    1
+let ``non-functions applied to arguments gives error`` () =
+    try
+        execute "(1 #f 3)" = "#t" |> ignore
+        failwith "Test didn't fail in expected way"
+    with
+        | :? System.Exception as evaluationException -> test <@ evaluationException.Message = "function application expected" @>

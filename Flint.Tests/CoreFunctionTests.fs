@@ -1,4 +1,4 @@
-﻿module BuiltInFunctionTests
+﻿module CoreFunctionTests
 
 open NUnit.Framework
 open Swensen.Unquote

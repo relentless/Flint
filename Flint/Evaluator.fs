@@ -27,7 +27,9 @@ let rec evaluate evaluationRecord =
     | MultipleExpressions( expressions ) -> 
         expressions |> getLastExpression evaluationRecord.Environment evaluationRecord.Functions
     | ExpList(expressions) -> 
-        expressions |> evaluateExpressionList evaluationRecord.Environment evaluationRecord.Functions ExpList |> evaluate
+        match expressions with 
+        | Number(_)::_ | String(_)::_ | Boolean(_)::_ -> failwith "function application expected"
+        | _ -> expressions |> evaluateExpressionList evaluationRecord.Environment evaluationRecord.Functions ExpList |> evaluate
     | _ -> evaluationRecord
 
 // evaluates each expression in a list and returns them in the provided container
@@ -73,14 +75,11 @@ and createLambdaFunction formals functions body =
 // - Better way of handling evaluation errors (error as AST concept?)
 // - Add VarArgs syntax sugar for Define
 // - Try active pattern matching in interpreter
-// - Split interpreter into separate step for transformations and evaluation? (e.g. cond -> if, then evaluate if)
 // - Implement tail recursion
 
 // ** To Try **
 
-
 // - Separate parse tree
-// - Separate evaluation stages
 // - Eager vs Lazy evaluation
 // - Typed Scheme
 // - Minimal primitives
