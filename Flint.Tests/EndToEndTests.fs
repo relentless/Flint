@@ -187,3 +187,11 @@ let ``non-functions applied to arguments gives error`` () =
         failwith "Test didn't fail in expected way"
     with
         | :? System.Exception as evaluationException -> test <@ evaluationException.Message = "function application expected" @>
+
+[<Test>]
+let ``eval works with quoted expression`` () =
+    test <@ execute "(eval '(+ 1 2 3))" = "6"  @>
+
+//[<Test>]
+//let ``eval works with non-quoted expression`` () =
+//    test <@ execute "(eval (+ 1 2 3))" = "6"  @>

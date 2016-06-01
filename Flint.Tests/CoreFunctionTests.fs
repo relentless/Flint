@@ -32,7 +32,3 @@ let ``string? works for strings`` () =
 let ``string? works for non-strings`` () =
     test <@ execute "(string? 3)" = "#f"  @>
     test <@ execute "(string? #t)" = "#f"  @>
-
-[<Test>]
-let ``eval works`` () =
-    test <@ execute "(eval '(+ 1 2 3))" = "6"  @> // maybe this is just an expansion
