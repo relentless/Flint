@@ -22,3 +22,7 @@ let ``Expanding let with multiple assignment results in lambda`` () =
     let letExpression = ExpList([Symbol("let");ExpList([ExpList([Symbol("x");Number(10)]);ExpList([Symbol("y");Number(5)])]); ExpList([Symbol("+");Symbol("x");Symbol("y")])])
     let lambdaExpression = ExpList([ExpList([Symbol("lambda"); ExpList([Symbol("x")]);ExpList([ExpList([Symbol("lambda"); ExpList([Symbol("y")]); ExpList([Symbol("+");Symbol("x");Symbol("y")])]); Number(5)])]); Number(10)])
     test <@ expand <| letExpression = lambdaExpression @>
+
+[<Test>]
+let ``Expanding ExpList with eval and QuotedExpression results in plan ExpList`` () =
+    test <@ expand <| ExpList([Symbol("eval");QuotedList([Symbol("+");Number(1);Number(2)])]) = ExpList([Symbol("+");Number(1);Number(2)]) @>

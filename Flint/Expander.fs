@@ -11,7 +11,7 @@ let rec expand = function
         let longhandLambda = ExpList([Symbol("define");Symbol(lambdaName);ExpList([Symbol("lambda");ExpList(lambdaFormals);expression])])
         longhandLambda |> expand
     | ExpList([Symbol("let");ExpList(assignments); expressionsUsingValues]) -> letToLambda assignments expressionsUsingValues
-    | ExpList([Symbol("eval");QuotedList(expression)]) -> ExpList(expression)
+    | ExpList([Symbol("eval");QuotedList(expression)]) -> ExpList(expression) |> expand
     | SeparateExpressions(expressions) -> expressions |> expandExpressionList SeparateExpressions
     | MultipleExpressions(expressions) -> expressions |> expandExpressionList MultipleExpressions
     | ExpList(expressions) -> expressions |> expandExpressionList ExpList

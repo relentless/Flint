@@ -183,7 +183,7 @@ let ``type checking predicates work for complex expressions`` () =
 [<Test>]
 let ``non-functions applied to arguments gives error`` () =
     try
-        execute "(1 #f 3)" = "#t" |> ignore
+        execute "(1 #f 3)" = "#t" |> ignore 
         failwith "Test didn't fail in expected way"
     with
         | :? System.Exception as evaluationException -> test <@ evaluationException.Message = "function application expected" @>
@@ -192,6 +192,10 @@ let ``non-functions applied to arguments gives error`` () =
 let ``eval works with quoted expression`` () =
     test <@ execute "(eval '(+ 1 2 3))" = "6"  @>
 
-//[<Test>]
-//let ``eval works with non-quoted expression`` () =
-//    test <@ execute "(eval (+ 1 2 3))" = "6"  @>
+[<Test>]
+let ``eval works with non-quoted expression`` () =
+    test <@ execute "(eval (+ 1 2 3))" = "6"  @>
+
+[<Test>]
+let ``apply works with quoted expression`` () =
+    test <@ execute "(apply + '(1 2 3))" = "6"  @>

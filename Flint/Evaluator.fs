@@ -22,6 +22,8 @@ let rec evaluate evaluationRecord =
     | ExpList(Lambda(lambdaName)::arguments) -> 
         if not (evaluationRecord.Functions |> Map.containsKey lambdaName) then failwith (sprintf "Lambda '%s' not found." lambdaName)
         {evaluationRecord with Expression = evaluationRecord.Functions.[lambdaName] arguments evaluationRecord.Environment}
+    | ExpList([Symbol("apply");func;QuotedList(args)]) -> 
+        {evaluationRecord with Expression = ExpList(func::args)} |> evaluate 
     | SeparateExpressions( expressions ) -> 
         expressions |> evaluateExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
     | MultipleExpressions( expressions ) -> 
