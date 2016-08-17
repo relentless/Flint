@@ -25,4 +25,4 @@ let ``Expanding let with multiple assignment results in lambda`` () =
 
 [<Test>]
 let ``Expanding ExpList with eval and QuotedExpression results in plan ExpList`` () =
-    test <@ expand <| ExpList([Symbol("eval");Symbol("'");ExpList([Symbol("+");Number(1);Number(2)])]) = ExpList([Symbol("+");Number(1);Number(2)]) @>
+    test <@ expand <| ExpList([Symbol("eval");ExpList([Symbol("quote");ExpList([Symbol("+");Number(1);Number(2)])])]) = ExpList([Symbol("+");Number(1);Number(2)]) @>

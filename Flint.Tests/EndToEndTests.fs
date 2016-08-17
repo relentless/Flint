@@ -190,11 +190,11 @@ let ``non-functions applied to arguments gives error`` () =
 
 [<Test>]
 let ``eval works with quoted expression`` () =
-    test <@ execute "(eval '(+ 1 2 3))" = "6"  @>
+    test <@ execute "(eval (quote (+ 1 2 3)))" = "6"  @>
 
 [<Test>]
-let ``eval works with non-quoted expression`` () =
-    test <@ execute "(eval (+ 1 2 3))" = "6"  @>
+let ``eval works with apostrophe-quoted expression`` () =
+    test <@ execute "(eval '(+ 1 2 3))" = "6"  @>
 
 [<Test>]
 let ``apply works with quoted expression`` () =
