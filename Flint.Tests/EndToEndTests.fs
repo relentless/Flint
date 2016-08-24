@@ -141,6 +141,10 @@ let ``Shortcut for defining a lambda works`` () =
     test <@ execute "(define (square x) (* x x)) (square 10)" = "100"  @>
 
 [<Test>]
+let ``Shortcut for defining a lambda works inside a lambda shortcut`` () =
+    test <@ execute "(define (add15 x) (define (add10 y) (+ 10 y)) (+ 5 (add10 x))) (add15 1)" = "100"  @>
+
+[<Test>]
 let ``cond with single expression true`` () =
     test <@ execute "(cond (#t 99))" = "99"  @>
 

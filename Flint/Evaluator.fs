@@ -77,7 +77,7 @@ and createLambdaFunction formals functions body =
 // - Better way of handling evaluation errors (error as AST concept?)
 // - Add VarArgs syntax sugar for Define
 // - Try active pattern matching in interpreter
-// - Implement tail recursion
+// - Implement tail recursion in scheme
 
 // ** To Try **
 

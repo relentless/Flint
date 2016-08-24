@@ -49,15 +49,16 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="ProgramTests.fs" />
     <Compile Include="ParserTests.fs" />
     <Content Include="packages.config" />
     <Content Include="app.config" />
     <Compile Include="EvaluatorTests.fs" />
-    <Compile Include="EndToEndTests.fs" />
     <Compile Include="PrinterTests.fs" />
     <Compile Include="CoreLibTests.fs" />
     <Compile Include="ExpanderTests.fs" />
     <Compile Include="CoreFunctionTests.fs" />
+    <Compile Include="EndToEndTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

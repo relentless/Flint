@@ -8,10 +8,9 @@ let rec expand x = match x with
     | ExpList(Symbol("cond")::parts) -> condToIf(parts) |> expand
     | ExpList([Symbol("quote");ExpList(expressions)]) -> QuotedList(expressions) |> expand
     | ExpList([Symbol("define");ExpList(Symbol(lambdaName)::lambdaFormals);expression]) -> 
-        let longhandLambda = ExpList([Symbol("define");Symbol(lambdaName);ExpList([Symbol("lambda");ExpList(lambdaFormals);expression])])
+        let longhandLambda = ExpList([Symbol("define");Symbol(lambdaName);ExpList([Symbol("lambda");ExpList(lambdaFormals);expand expression])])
         longhandLambda |> expand
     | ExpList([Symbol("let");ExpList(assignments); expressionsUsingValues]) -> letToLambda assignments expressionsUsingValues
-    | ExpList([Symbol("eval");ExpList([Symbol("quote");ExpList(expressions)])]) -> ExpList(expressions) |> expand
     | ExpList([Symbol("eval");ExpList([Symbol("quote");ExpList(expressions)])]) -> ExpList(expressions) |> expand
     | SeparateExpressions(expressions) -> expressions |> expandExpressionList SeparateExpressions
     | MultipleExpressions(expressions) -> expressions |> expandExpressionList MultipleExpressions

@@ -26,3 +26,8 @@ let ``Expanding let with multiple assignment results in lambda`` () =
 [<Test>]
 let ``Expanding ExpList with eval and QuotedExpression results in plan ExpList`` () =
     test <@ expand <| ExpList([Symbol("eval");ExpList([Symbol("quote");ExpList([Symbol("+");Number(1);Number(2)])])]) = ExpList([Symbol("+");Number(1);Number(2)]) @>
+
+[<Test>]
+let ``TODO: Expanding shortcut for defining a lambda inside a lambda shortcut`` () =
+    //test <@ execute "(define (add15 x) (define (add10 y) (+ 10 y)) (+ 5 (add10 x))) (add15 1)" = "100"  @>
+    test <@ 1 = 0 @>
