@@ -25,7 +25,9 @@ let rec evaluate evaluationRecord =
     | ExpList([Symbol("apply");func;QuotedList(args)]) -> 
         {evaluationRecord with Expression = ExpList(func::args)} |> evaluate 
     | SeparateExpressions( expressions ) -> 
-        expressions |> evaluateExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
+        expressions 
+        |> evaluateExpressionList evaluationRecord.Environment evaluationRecord.Functions SeparateExpressions
+        |> collapseSeparateExpressions
     | MultipleExpressions( expressions ) -> 
         expressions |> getLastExpression evaluationRecord.Environment evaluationRecord.Functions
     | ExpList(expressions) -> 
@@ -68,6 +70,12 @@ and createLambdaFunction formals functions body =
                 |> List.fold (fun (lambdaEnv:EnvironmentDictionary) (Symbol(name), value) -> lambdaEnv.Add(name, value)) env
         (evaluate {Expression = body; Environment = environmentWithArguments; Functions = functions}).Expression
 
+and collapseSeparateExpressions evaluationRecord =
+    match evaluationRecord.Expression with
+    | SeparateExpressions( Nil::expressions ) -> 
+        evaluate {evaluationRecord with Expression = SeparateExpressions( expressions )}
+    | SeparateExpressions( expression::[] ) -> 
+        evaluate {evaluationRecord with Expression = expression}
 
 // ** TODO **
 

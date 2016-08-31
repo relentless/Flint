@@ -28,6 +28,75 @@ let ``Expanding ExpList with eval and QuotedExpression results in plan ExpList``
     test <@ expand <| ExpList([Symbol("eval");ExpList([Symbol("quote");ExpList([Symbol("+");Number(1);Number(2)])])]) = ExpList([Symbol("+");Number(1);Number(2)]) @>
 
 [<Test>]
-let ``TODO: Expanding shortcut for defining a lambda inside a lambda shortcut`` () =
-    //test <@ execute "(define (add15 x) (define (add10 y) (+ 10 y)) (+ 5 (add10 x))) (add15 1)" = "100"  @>
-    test <@ 1 = 0 @>
+let ``Expanding shortcut for defining a lambda works inside a lambda shortcut`` () =
+    // "(define (add15 x) (define (add10 y) (+ 10 y)) (+ 5 (add10 x)))"
+    let from = 
+        ExpList([
+            Symbol("define"); 
+            ExpList([
+                Symbol("add15"); 
+                Symbol("x")
+            ]);
+            SeparateExpressions([
+                ExpList([
+                    Symbol("define");
+                    ExpList([
+                        Symbol("add10");
+                        Symbol("y")
+                    ]);
+                    ExpList([
+                        Symbol("+");
+                        Number(10);
+                        Symbol("y")
+                    ])
+                ])
+                ExpList([
+                    Symbol("+");
+                    Symbol("x");
+                    ExpList([
+                        Symbol("add10");
+                        Symbol("x")
+                    ])
+                ])
+            ])
+        ])
+
+    // (define add15 (lambda (x) (define add10 (lambda (y) (+ 10 y))) (+ 5 (add10 x))))
+    let to' = 
+        ExpList([
+            Symbol("define"); 
+            Symbol("add15"); 
+            ExpList([
+                Symbol("lambda")
+                ExpList([
+                    Symbol("x")
+                ]);
+                SeparateExpressions([
+                    ExpList([
+                        Symbol("define");
+                        Symbol("add10");
+                        ExpList([
+                            Symbol("lambda");
+                            ExpList([
+                                Symbol("y")
+                            ]);
+                            ExpList([
+                                Symbol("+");
+                                Number(10);
+                                Symbol("y")
+                            ])
+                        ])
+                    ])
+                    ExpList([
+                        Symbol("+");
+                        Symbol("x");
+                        ExpList([
+                            Symbol("add10");
+                            Symbol("x")
+                        ])
+                    ])
+                ])
+            ])
+        ])
+    test <@ expand <| from = to'  @>
+
